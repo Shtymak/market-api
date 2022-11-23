@@ -1,8 +1,7 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ConfigService } from '@nestjs/config';
+import { AppModule } from './app.module';
 
 const PORT = process.env.PORT || 9999;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
