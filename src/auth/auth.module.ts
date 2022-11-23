@@ -1,4 +1,3 @@
-import { MailerModule } from '@nestjs-modules/mailer';
 import { LoginLink, LoginLinkSchema } from './login-link.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './../users/users.module';
@@ -7,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { MailModule } from 'src/mail/mail.module';
 @Module({
   imports: [
     JwtModule.registerAsync({
@@ -22,7 +22,7 @@ import { AuthService } from './auth.service';
     MongooseModule.forFeature([
       { name: LoginLink.name, schema: LoginLinkSchema },
     ]),
-    MailerModule,
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
