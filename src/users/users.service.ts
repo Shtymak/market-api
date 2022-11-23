@@ -1,5 +1,5 @@
 import { GetUserDto } from './dto/get-user.dto';
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,8 +27,29 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<GetUserDto> {
+    try {
+      const user = await this.userModel.findById(id);
+      this.logger.debug(`User found: `, user);
+      return new GetUserDto(user);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async findByEmail(email: string): Promise<GetUserDto> {
+    try {
+      const user = await this.userModel
+        .findOne({ email })
+        .select('+password')
+        .exec();
+      this.logger.debug(`User found: `, user);
+      return new GetUserDto(user);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
