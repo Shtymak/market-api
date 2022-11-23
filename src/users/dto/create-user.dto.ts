@@ -31,4 +31,8 @@ export class CreateUserDto {
 
   @ApiProperty({ example: 'xxxxxxxxxxxxxxxx', description: 'Google Id' })
   googleId: string;
+
+  constructor(model: Partial<CreateUserDto>) {
+    Object.assign(this, model);
+  }
 }
