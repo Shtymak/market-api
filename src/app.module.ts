@@ -5,6 +5,8 @@ import { config } from '../config/configuration';
 import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
+import { RolesModule } from './roles/roles.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { UsersController } from './users/users.controller';
       load: [config],
       validationSchema: validationSchema,
     }),
+    RolesModule,
+    AuthModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],

@@ -1,5 +1,5 @@
 import { GetUserDto } from './dto/get-user.dto';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,9 +11,16 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
+  private logger = new Logger(UsersService.name);
   async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
-    const createdUser = await this.userModel.create(createUserDto);
-    return new GetUserDto(createdUser);
+    try {
+      const createdUser = await this.userModel.create(createUserDto);
+      this.logger.debug(`User created: `, createdUser);
+      return new GetUserDto(createdUser);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw e;
+    }
   }
 
   findAll() {

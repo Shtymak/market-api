@@ -4,4 +4,7 @@ export const config = () => ({
   database: {
     uri: process.env.DATABASE_URI || 'mongodb://localhost:27017/nestjs',
   },
+  jwt: {
+    secret: process.env.JWT_SECRET || 'secret',
+  },
 });
