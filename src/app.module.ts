@@ -6,7 +6,7 @@ import { AppController } from './app.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.${process.env.NODE_ENV || 'development'}.env`,
+      envFilePath: `.${process.env.NODE_ENV || '.dev'}.env`,
       isGlobal: true,
       load: [config],
       validationSchema: validationSchema,
