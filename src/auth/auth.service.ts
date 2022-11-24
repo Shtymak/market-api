@@ -1,25 +1,23 @@
-import { GetAuthDto } from './dto/get-auth.dto';
-import { LoginLink, LoginLinkDocument } from './login-link.model';
-import { UsersService } from './../users/users.service';
-import { MagicLinkDto } from './dto/magic-link.dto';
-import { PayloadDto } from './dto/payload.dto';
-import { GetUserDto } from './../users/dto/get-user.dto';
-import { UserDocument } from './../users/user.model';
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
-  HttpException,
   NotFoundException,
-  HttpStatus,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/users/user.model';
-import { Model } from 'mongoose';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import * as uuid from 'uuid';
+import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateMailDto } from 'src/mail/dto/create-mail.dto';
 import { MailService } from 'src/mail/mail.service';
+import * as uuid from 'uuid';
+import { GetUserDto } from './../users/dto/get-user.dto';
+import { UsersService } from './../users/users.service';
+import { GetAuthDto } from './dto/get-auth.dto';
+import { MagicLinkDto } from './dto/magic-link.dto';
+import { PayloadDto } from './dto/payload.dto';
+import { LoginLink, LoginLinkDocument } from './login-link.model';
 
 @Injectable()
 export class AuthService {
@@ -33,47 +31,62 @@ export class AuthService {
   ) {}
   private logger = new Logger(AuthService.name);
 
-  async magicLogin(dto: MagicLinkDto): Promise<GetAuthDto> {
+  private generateAccessCode(): string {
+    const mask = '000000';
+    const code = Math.floor(Math.random() * 999999).toString();
+    return mask.substring(0, mask.length - code.length) + code;
+  }
+
+  public async magicLogin(dto: MagicLinkDto): Promise<GetAuthDto> {
     try {
-      const link = await this.linkModel.findOne({ link: dto.link });
-      if (!link) {
-        throw new NotFoundException('Link not found');
-      }
-      if (link.isActived) {
-        throw new HttpException('Link is already used', HttpStatus.BAD_REQUEST);
-      }
-      const user = await this.UsersService.findOne(link.user);
-      if (!user) {
+      const candidate = await this.UsersService.findByEmail(dto.email);
+      if (!candidate) {
         throw new NotFoundException('User not found');
       }
-      link.isActived = true;
-      await link.save();
-      const accessToken = this.generateToken(user);
+      const link = await this.linkModel.findOne({
+        link: dto.code,
+        user: candidate,
+      });
+      if (!link) {
+        throw new NotFoundException('Code not found');
+      }
+      if (link.isActived) {
+        throw new HttpException('Code is already used', HttpStatus.BAD_REQUEST);
+      }
+      if (link.link !== dto.code) {
+        throw new HttpException('Code is not valid', HttpStatus.BAD_REQUEST);
+      }
+      await this.linkModel.updateOne(
+        {
+          id: link.id,
+        },
+        {
+          isActivated: true,
+        },
+      );
+      const accessToken = this.generateToken(candidate);
       return {
         token: accessToken,
-        user,
+        user: candidate,
       };
     } catch (e) {
       throw new HttpException(e.message, e.status);
     }
   }
-  async sendLoginMagicLink(email: string): Promise<boolean> {
+  public async sendLoginMagicLink(email: string): Promise<boolean> {
     try {
       const user = await this.UsersService.findByEmail(email);
-      const uuidLink = uuid.v4();
-      const magicLink = `${this.configService.get<string>(
-        'hostUrl',
-      )}/auth/login/${uuidLink}`;
-      await this.linkModel.create({
-        link: magicLink,
-        user: user.id,
-        isActived: false,
-      });
+      const accessCode = this.generateAccessCode();
       const data: CreateMailDto = {
         to: email,
         subject: `Login ${this.configService.get<string>('appName')}`,
-        content: `<a href="${magicLink}">Login</a>`,
+        content: `<h1>Access code: ${accessCode}</h1>`,
       };
+      await this.linkModel.create({
+        link: accessCode,
+        user: user.id,
+        isActived: false,
+      });
       const result = await this.mailService.sendMagicLink(data);
       return result;
     } catch (error) {
@@ -82,7 +95,7 @@ export class AuthService {
     }
   }
 
-  validateAccessToken(token: string): string {
+  public validateAccessToken(token: string): string {
     try {
       const userData = this.jwtService.verify(token, {
         secret: this.configService.get<string>('jwt.secret'),
@@ -94,7 +107,7 @@ export class AuthService {
     }
   }
 
-  generateToken(user: GetUserDto): string {
+  public generateToken(user: GetUserDto): string {
     const payload: PayloadDto = {
       id: user.id,
       email: user.email,

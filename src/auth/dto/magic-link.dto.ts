@@ -1,6 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class MagicLinkDto {
-  @ApiProperty({ example: 'me/link', description: 'Login link' })
-  link: string;
+  @ApiProperty({ example: '000000', description: 'Login code' })
+  code: string;
+
+  @ApiProperty({})
+  email: string;
 }
