@@ -56,6 +56,15 @@ export class AuthService {
       if (link.link !== dto.code) {
         throw new HttpException('Code is not valid', HttpStatus.BAD_REQUEST);
       }
+      //code live is 15 minutes
+      const now = new Date();
+      const diff = now.getTime() - link.createdAt.getTime();
+      const minutes = Math.floor(diff / 1000 / 60);
+
+      this.logger.debug(`Minutes: ${minutes}`);
+      if (minutes > 15) {
+        throw new HttpException('Code is expired', HttpStatus.BAD_REQUEST);
+      }
       await this.linkModel.updateOne(
         { _id: link._id },
         { isActived: true },
@@ -87,7 +96,6 @@ export class AuthService {
       });
       const result = await this.mailService.sendMagicLink(data);
       return result;
-      // return true;
     } catch (error) {
       this.logger.error(`Error on send magic link: ${error}`);
       throw new NotFoundException();

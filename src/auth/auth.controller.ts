@@ -19,7 +19,9 @@ export class AuthController {
       const token = await this.authService.magicLogin(body);
       response.status(HttpStatus.OK).json(token);
     } catch (e) {
-      response.status(HttpStatus.BAD_REQUEST).json(e.message);
+      response.status(e.status).json({
+        message: e.message,
+      });
     }
   }
 
@@ -27,9 +29,13 @@ export class AuthController {
   async sendCode(@Body() body: SendCodeDto, @Res() response: Response) {
     try {
       const token = await this.authService.sendLoginMagicLink(body.email);
-      response.status(HttpStatus.OK).json(token);
+      response
+        .status(HttpStatus.OK)
+        .json({ message: 'Code sent', isCodeSent: token });
     } catch (e) {
-      response.status(HttpStatus.BAD_REQUEST).json(e.message);
+      response.status(e.status).json({
+        message: e.message,
+      });
     }
   }
 }

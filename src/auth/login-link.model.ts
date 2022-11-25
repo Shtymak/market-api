@@ -16,6 +16,10 @@ export class LoginLink {
   @ApiProperty({ example: false, description: 'link is actived' })
   @Prop({ required: true })
   isActived: boolean;
+
+  @ApiProperty({ example: '22-09-2022', description: 'date of creation' })
+  @Prop({ required: false, default: new Date() })
+  createdAt: Date;
 }
 
 export const LoginLinkSchema = SchemaFactory.createForClass(LoginLink);
