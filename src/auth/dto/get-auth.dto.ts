@@ -8,7 +8,8 @@ export class GetAuthDto {
   @ApiProperty({ example: 'user', description: 'User' })
   user: GetUserDto;
 
-  constructor(partial: Partial<GetAuthDto>) {
-    Object.assign(this, partial);
+  constructor(token: string, user: GetUserDto) {
+    this.token = token;
+    this.user = user;
   }
 }

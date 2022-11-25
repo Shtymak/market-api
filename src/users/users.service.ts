@@ -44,8 +44,11 @@ export class UsersService {
         .findOne({ email })
         .select('+password')
         .exec();
-      this.logger.debug(`User found: `, user);
-      return new GetUserDto(user);
+
+      this.logger.debug(`User found: ${user}`);
+      const returnUser = new GetUserDto(user);
+      this.logger.debug(`User found: ${returnUser}`);
+      return returnUser;
     } catch (e: any) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);

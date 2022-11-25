@@ -1,5 +1,6 @@
 import { Roles } from './../../types/Roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '../user.model';
 import { BaseEntity } from 'src/types/Base.entity';
 
 export class CreateUserDto extends BaseEntity {
@@ -33,8 +34,16 @@ export class CreateUserDto extends BaseEntity {
   @ApiProperty({ example: 'xxxxxxxxxxxxxxxx', description: 'Google Id' })
   googleId: string;
 
-  constructor(model: Partial<CreateUserDto>) {
-    super();
-    Object.assign(this, model);
+  constructor(model: User) {
+    super(model);
+    this.email = model.email;
+    this.password = model.password;
+    this.name = model.name;
+    this.dateOfBirth = model.dateOfBirth;
+    this.avatar = model.avatar;
+    this.roles = model.roles;
+    this.banned = model.banned;
+    this.phone = model.phone;
+    this.googleId = model.googleId;
   }
 }

@@ -45,7 +45,7 @@ export class AuthService {
       }
       const link = await this.linkModel.findOne({
         link: dto.code,
-        user: candidate,
+        user: candidate.id,
       });
       if (!link) {
         throw new NotFoundException('Code not found');
@@ -57,12 +57,9 @@ export class AuthService {
         throw new HttpException('Code is not valid', HttpStatus.BAD_REQUEST);
       }
       await this.linkModel.updateOne(
-        {
-          id: link.id,
-        },
-        {
-          isActivated: true,
-        },
+        { _id: link._id },
+        { isActived: true },
+        { new: true },
       );
       const accessToken = this.generateToken(candidate);
       return {
@@ -76,6 +73,7 @@ export class AuthService {
   public async sendLoginMagicLink(email: string): Promise<boolean> {
     try {
       const user = await this.UsersService.findByEmail(email);
+      this.logger.debug(`User: ${JSON.stringify(user)}`);
       const accessCode = this.generateAccessCode();
       const data: CreateMailDto = {
         to: email,
@@ -89,6 +87,7 @@ export class AuthService {
       });
       const result = await this.mailService.sendMagicLink(data);
       return result;
+      // return true;
     } catch (error) {
       this.logger.error(`Error on send magic link: ${error}`);
       throw new NotFoundException();

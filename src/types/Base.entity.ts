@@ -9,4 +9,10 @@ export class BaseEntity {
 
   @ApiProperty({ example: '2022-09-22', description: 'Date of update' })
   updatedAt: Date;
+
+  constructor(model: any) {
+    this.id = model.id;
+    this.createdAt = model.createdAt;
+    this.updatedAt = model.updatedAt;
+  }
 }
