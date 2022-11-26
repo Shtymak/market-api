@@ -51,7 +51,7 @@ export class AuthService {
         throw new NotFoundException('Code not found');
       }
       if (link.isActived) {
-        throw new HttpException('Code is already used', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Code is already used', HttpStatus.FORBIDDEN);
       }
       if (link.link !== dto.code) {
         throw new HttpException('Code is not valid', HttpStatus.BAD_REQUEST);
@@ -63,7 +63,7 @@ export class AuthService {
 
       this.logger.debug(`Minutes: ${minutes}`);
       if (minutes > 15) {
-        throw new HttpException('Code is expired', HttpStatus.BAD_REQUEST);
+        throw new HttpException('Code is expired', HttpStatus.FORBIDDEN);
       }
       await this.linkModel.updateOne(
         { _id: link._id },
