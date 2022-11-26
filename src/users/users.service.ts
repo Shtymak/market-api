@@ -5,7 +5,9 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './user.model';
-
+import { faker } from '@faker-js/faker';
+import * as bcrypt from 'bcrypt';
+import { Roles } from 'src/types/Roles.enum';
 @Injectable()
 export class UsersService {
   constructor(
@@ -14,7 +16,11 @@ export class UsersService {
   private logger = new Logger(UsersService.name);
   async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
     try {
-      const createdUser = await this.userModel.create(createUserDto);
+      const password = await bcrypt.hash(createUserDto.password, 10);
+      const createdUser = await this.userModel.create({
+        ...createUserDto,
+        password,
+      });
       this.logger.debug(`User created: `, createdUser);
       return new GetUserDto(createdUser);
     } catch (e: any) {
@@ -53,6 +59,27 @@ export class UsersService {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async createRandomUsers(count: number): Promise<GetUserDto[]> {
+    const users = [];
+    for (let i = 0; i < count; i++) {
+      const hashedPassword = await bcrypt.hash(faker.internet.password(), 10);
+      const user: User = {
+        email: faker.internet.email(),
+        password: hashedPassword,
+        name: faker.name.firstName(),
+        dateOfBirth: faker.date.past(),
+        avatar: faker.image.avatar(),
+        roles: [Roles.USER],
+        banned: false,
+        phone: faker.phone.phoneNumber(),
+        googleId: '',
+      };
+      users.push(user);
+    }
+    const createdUsers = await this.userModel.insertMany(users);
+    return createdUsers.map((user) => new GetUserDto(user));
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

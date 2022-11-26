@@ -31,6 +31,17 @@ export class UsersController {
     response.status(HttpStatus.CREATED).json(user);
   }
 
+  @Post('/create/random')
+  @ApiOperation({ summary: 'Create a random user' })
+  @ApiResponse({ type: [GetUserDto], status: HttpStatus.CREATED })
+  async createRandomUsers(
+    @Body() body: { count: number },
+    @Res() response: Response,
+  ) {
+    const user = await this.usersService.createRandomUsers(body.count);
+    response.status(HttpStatus.CREATED).json(user);
+  }
+
   @Get()
   findAll() {
     return this.usersService.findAll();
