@@ -9,6 +9,7 @@ import { UsersController } from './users/users.controller';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     MailModule,
     UsersModule,
+    UploadsModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],
