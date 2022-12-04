@@ -1,8 +1,5 @@
 import { BlobServiceClient, ContainerClient } from '@azure/storage-blob';
 import { IFileUpload } from './upload.interface';
-import { ConfigService } from '@nestjs/config';
-
-const configService = new ConfigService();
 
 export class AzureUpload implements IFileUpload {
   private containerClient: ContainerClient;
@@ -12,15 +9,15 @@ export class AzureUpload implements IFileUpload {
   private containerURL: string;
 
   constructor() {
-    this.connectionString = configService.get('azure.connectionString');
-    this.containerName = configService.get('azure.containerName');
+    this.connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+    this.containerName = process.env.AZURE_STORAGE_CONTAINER_NAME;
     this.blobServiceClient = BlobServiceClient.fromConnectionString(
       this.connectionString,
     );
     this.containerClient = this.blobServiceClient.getContainerClient(
       this.containerName,
     );
-    this.containerURL = configService.get('azure.containerURL');
+    this.containerURL = process.env.AZURE_STORAGE_CONTAINER_URL;
   }
 
   async upload(name: string, buffer: Buffer): Promise<string> {
