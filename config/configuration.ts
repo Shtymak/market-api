@@ -21,4 +21,15 @@ export const config = () => ({
       from: process.env.MAIL_DEFAULTS_FROM || 'user',
     },
   },
+  azure: {
+    connectionString: process.env.AZURE_CONNECTION_STRING || 'connectionString',
+    containerName: process.env.AZURE_CONTAINER_NAME || 'containerName',
+    accountName: process.env.AZURE_ACCOUNT_NAME || 'accountName',
+    containerURL: process.env.AZURE_CONTAINER_URL || 'containerURL',
+  },
+  cloudinary: {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'cloud_name',
+    api_key: process.env.CLOUDINARY_API_KEY || 'api_key',
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  },
 });

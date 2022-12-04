@@ -13,4 +13,11 @@ export const validationSchema = Joi.object({
   MAIL_AUTH_USER: Joi.string().default('user'),
   MAIL_AUTH_PASS: Joi.string().default('pass'),
   MAIL_DEFAULTS_FROM: Joi.string().default('user'),
+  AZURE_CONNECTION_STRING: Joi.string().required(),
+  AZURE_CONTAINER_NAME: Joi.string().default('containerName'),
+  AZURE_ACCOUNT_NAME: Joi.string().required(),
+  AZURE_CONTAINER_URL: Joi.string().required(),
+  CLOUDINARY_CLOUD_NAME: Joi.string().required(),
+  CLOUDINARY_API_KEY: Joi.string().required(),
+  CLOUDINARY_API_SECRET: Joi.string().required(),
 });
