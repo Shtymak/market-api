@@ -11,6 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateMailDto } from 'src/mail/dto/create-mail.dto';
 import { MailService } from 'src/mail/mail.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import * as uuid from 'uuid';
 import { GetUserDto } from './../users/dto/get-user.dto';
 import { UsersService } from './../users/users.service';
@@ -35,6 +36,19 @@ export class AuthService {
     const mask = '000000';
     const code = Math.floor(Math.random() * 999999).toString();
     return mask.substring(0, mask.length - code.length) + code;
+  }
+
+  public async registration(user: CreateUserDto): Promise<GetAuthDto> {
+    try {
+      const newUser = await this.UsersService.create(user);
+      const accessToken = this.generateToken(newUser);
+      return {
+        token: accessToken,
+        user: newUser,
+      };
+    } catch (e) {
+      throw new HttpException(e.message, e.status);
+    }
   }
 
   public async magicLogin(dto: MagicLinkDto): Promise<GetAuthDto> {

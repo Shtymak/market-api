@@ -29,8 +29,14 @@ export class UsersService {
     }
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll() {
+    try {
+      const users = await this.userModel.find();
+      return users.map((user) => new GetUserDto(user));
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async findOne(id: string): Promise<GetUserDto> {

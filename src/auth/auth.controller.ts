@@ -1,3 +1,4 @@
+import { CreateUserDto } from './../users/dto/create-user.dto';
 import { GetAuthDto } from './dto/get-auth.dto';
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
 import {
@@ -56,6 +57,21 @@ export class AuthController {
       response
         .status(HttpStatus.OK)
         .json({ message: 'Code sent', isCodeSent: token });
+    } catch (e) {
+      response.status(e.status).json({
+        message: e.message,
+      });
+    }
+  }
+
+  @ApiOperation({ summary: 'Registration' })
+  @ApiBody({ type: CreateUserDto })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAuthDto })
+  @Post('register')
+  async register(@Body() body: CreateUserDto, @Res() response: Response) {
+    try {
+      const token = await this.authService.registration(body);
+      response.status(HttpStatus.OK).json(token);
     } catch (e) {
       response.status(e.status).json({
         message: e.message,
