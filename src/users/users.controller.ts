@@ -1,3 +1,4 @@
+import { JwtAuthGuard } from './../auth/auth.guard';
 import { RolesGuard } from './../roles/roles.guard';
 import { GetUserDto } from './dto/get-user.dto';
 import {
@@ -11,20 +12,29 @@ import {
   HttpStatus,
   Res,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Req,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBody,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Roles } from 'src/roles/roles.decorator';
 import { Roles as PermissionRoles } from 'src/types/Roles.enum';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SharpPipe } from 'pipes/sharp.pipe';
+import { TransformFileDto } from 'src/uploads/dto/transformFile.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -94,5 +104,31 @@ export class UsersController {
   async remove(@Param('id') id: string, @Res() response: Response) {
     await this.usersService.remove(id);
     response.status(HttpStatus.OK).send();
+  }
+
+  @Post('upload/avatar')
+  @UseInterceptors(FileInterceptor('avatar'))
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Add avatar to user' })
+  @ApiResponse({
+    type: GetUserDto,
+    status: HttpStatus.OK,
+    description: 'File name',
+  })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  @ApiNotFoundResponse({ description: 'User not found' })
+  @ApiNotFoundResponse({ description: 'File not found' })
+  async uploadFile(
+    @UploadedFile(SharpPipe) file: TransformFileDto,
+    @Req() request,
+  ) {
+    console.log(file);
+
+    if (!file) {
+      // this.logger.error('No file received');
+      throw new NotFoundException('No file found');
+    }
+    const user = await this.usersService.uploadAvatar(request.user.id, file);
+    return user;
   }
 }

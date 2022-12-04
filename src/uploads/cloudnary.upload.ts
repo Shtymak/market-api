@@ -1,15 +1,12 @@
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
 import { IFileUpload } from './upload.interface';
-import { ConfigService } from '@nestjs/config';
-
-const configService = new ConfigService();
 
 export class CloudinaryUpload implements IFileUpload {
   constructor() {
     cloudinary.config({
-      cloud_name: configService.get('cloudinary.cloud_name'),
-      api_key: configService.get('cloudinary.api_key'),
-      api_secret: configService.get('cloudinary.api_secret'),
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
     });
   }
   async upload(name: string, buffer: Buffer): Promise<string> {
@@ -17,7 +14,7 @@ export class CloudinaryUpload implements IFileUpload {
       cloudinary.uploader
         .upload_stream(
           {
-            public_id: `pdfs/${name}.pdf`,
+            public_id: `uploads/${name}`,
             resource_type: 'raw',
             folder: 'Files',
           },

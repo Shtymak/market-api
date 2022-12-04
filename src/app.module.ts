@@ -1,3 +1,4 @@
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { UsersModule } from './users/users.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -30,6 +31,15 @@ import { UploadsModule } from './uploads/uploads.module';
     MailModule,
     UsersModule,
     UploadsModule,
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: {
+          expiresIn: configService.get<string>('jwt.expiresIn'),
+        },
+      }),
+    }),
   ],
   controllers: [AppController, UsersController],
   providers: [],
