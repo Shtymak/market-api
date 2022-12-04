@@ -10,6 +10,9 @@ import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/types/Roles.enum';
 @Injectable()
 export class UsersService {
+  comparePassword(password: string, password1: string) {
+    return bcrypt.compare(password, password1);
+  }
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}

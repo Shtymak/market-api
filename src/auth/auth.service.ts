@@ -1,3 +1,4 @@
+import { LoginWithPasswordDto } from './dto/password-login.dto';
 import {
   HttpException,
   HttpStatus,
@@ -45,6 +46,31 @@ export class AuthService {
       return {
         token: accessToken,
         user: newUser,
+      };
+    } catch (e) {
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  public async loginWithPassword(
+    input: LoginWithPasswordDto,
+  ): Promise<GetAuthDto> {
+    try {
+      const user = await this.UsersService.findByEmail(input.email);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      const isPasswordValid = await this.UsersService.comparePassword(
+        input.password,
+        user.password,
+      );
+      if (!isPasswordValid) {
+        throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
+      }
+      const accessToken = this.generateToken(user);
+      return {
+        token: accessToken,
+        user,
       };
     } catch (e) {
       throw new HttpException(e.message, e.status);

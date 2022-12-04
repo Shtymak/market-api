@@ -1,3 +1,4 @@
+import { LoginWithPasswordDto } from './dto/password-login.dto';
 import { CreateUserDto } from './../users/dto/create-user.dto';
 import { GetAuthDto } from './dto/get-auth.dto';
 import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
@@ -39,6 +40,21 @@ export class AuthController {
   async loginWithCode(@Body() body: MagicLinkDto, @Res() response: Response) {
     try {
       const token = await this.authService.magicLogin(body);
+      response.status(HttpStatus.OK).json(token);
+    } catch (e) {
+      response.status(e.status).json({
+        message: e.message,
+      });
+    }
+  }
+
+  @Post('login/password')
+  async loginWithPassword(
+    @Body() body: LoginWithPasswordDto,
+    @Res() response: Response,
+  ) {
+    try {
+      const token = await this.authService.loginWithPassword(body);
       response.status(HttpStatus.OK).json(token);
     } catch (e) {
       response.status(e.status).json({
