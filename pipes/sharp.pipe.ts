@@ -3,8 +3,8 @@ import * as sharp from 'sharp';
 import { TransformFileDto } from 'src/uploads/dto/transformFile.dto';
 
 export const AVATAR_MAX_SIZE = 500;
-export const AVATAR_QUALITY = 1;
-export const AVATAR_COMPRESSION = 9;
+export const AVATAR_QUALITY = 100;
+export const AVATAR_COMPRESSION = 2;
 @Injectable()
 export class SharpPipe
   implements PipeTransform<Express.Multer.File, Promise<TransformFileDto>>
