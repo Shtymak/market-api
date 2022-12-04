@@ -39,6 +39,20 @@ export class AuthService {
     return mask.substring(0, mask.length - code.length) + code;
   }
 
+  public async saveAccessCode(user: GetUserDto): Promise<string> {
+    try {
+      const code = this.generateAccessCode();
+      await this.linkModel.create({
+        link: code,
+        user: user.id,
+        isActived: false,
+      });
+      return code;
+    } catch (e) {
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   public async registration(user: CreateUserDto): Promise<GetAuthDto> {
     try {
       const newUser = await this.UsersService.create(user);
@@ -134,6 +148,7 @@ export class AuthService {
         user: user.id,
         isActived: false,
       });
+
       const result = await this.mailService.sendMagicLink(data);
       return result;
     } catch (error) {

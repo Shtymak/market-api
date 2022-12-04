@@ -45,8 +45,8 @@ export class UsersController {
   @ApiOperation({ summary: 'Create a new user' })
   @ApiBody({ type: CreateUserDto })
   @ApiResponse({ type: GetUserDto, status: HttpStatus.CREATED })
-  @UseGuards(RolesGuard)
-  @Roles(PermissionRoles.ADMIN, PermissionRoles.MODERATOR)
+  // @UseGuards(RolesGuard)
+  // @Roles(PermissionRoles.ADMIN, PermissionRoles.MODERATOR)
   async create(
     @Body() createUserDto: CreateUserDto,
     @Res() response: Response,

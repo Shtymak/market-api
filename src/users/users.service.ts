@@ -124,6 +124,21 @@ export class UsersService {
     }
   }
 
+  public async findByPhone(phone: string): Promise<GetUserDto> {
+    try {
+      const user = await this.userModel.findOne({ phone: phone });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      this.logger.debug(user);
+      const returnUser = new GetUserDto(user);
+      return returnUser;
+    } catch (e: any) {
+      this.logger.error(e);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   public async uploadAvatar(id: string, dto: TransformFileDto) {
     try {
       const { file } = dto;

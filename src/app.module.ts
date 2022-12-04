@@ -11,6 +11,7 @@ import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { UploadsModule } from './uploads/uploads.module';
         },
       }),
     }),
+    TelegramModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],
