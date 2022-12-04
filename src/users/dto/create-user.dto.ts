@@ -20,7 +20,7 @@ export class CreateUserDto extends BaseEntity {
   dateOfBirth: Date;
 
   @ApiProperty({ example: 'File', description: 'Photo/avatar' })
-  avatar: string;
+  avatar?: string;
 
   @ApiProperty({ example: 'USER', description: 'Role of account' })
   roles: Roles[];

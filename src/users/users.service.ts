@@ -91,11 +91,30 @@ export class UsersService {
     return createdUsers.map((user) => new GetUserDto(user));
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  public async update(
+    id: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<GetUserDto> {
+    try {
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        id,
+        updateUserDto,
+        { new: true },
+      );
+      return new GetUserDto(updatedUser);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  public async remove(id: string) {
+    try {
+      const deletedUser = await this.userModel.findByIdAndRemove(id);
+      return new GetUserDto(deletedUser);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

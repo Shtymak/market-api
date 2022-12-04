@@ -13,7 +13,13 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response } from 'express';
 
 @ApiTags('users')
@@ -52,17 +58,29 @@ export class UsersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    // return this.usersService.findOne(+id);
+  @ApiOperation({ summary: 'Get a user by id' })
+  @ApiResponse({ type: GetUserDto, status: HttpStatus.OK })
+  @ApiParam({ name: 'id', type: 'string' })
+  async findOne(@Param('id') id: string): Promise<GetUserDto> {
+    const user = await this.usersService.findOne(id);
+    return user;
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a user' })
+  @ApiBody({ type: UpdateUserDto })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiResponse({ type: GetUserDto, status: HttpStatus.OK })
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @ApiOperation({ summary: 'Delete a user' })
+  @ApiParam({ name: 'id', type: 'string' })
+  @ApiResponse({ status: HttpStatus.OK })
+  async remove(@Param('id') id: string, @Res() response: Response) {
+    await this.usersService.remove(id);
+    response.status(HttpStatus.OK).send();
   }
 }
