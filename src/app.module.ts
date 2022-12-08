@@ -1,3 +1,4 @@
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { UsersModule } from './users/users.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -9,6 +10,8 @@ import { UsersController } from './users/users.controller';
 import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
+import { UploadsModule } from './uploads/uploads.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -28,6 +31,17 @@ import { MailModule } from './mail/mail.module';
     AuthModule,
     MailModule,
     UsersModule,
+    UploadsModule,
+    JwtModule.registerAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: {
+          expiresIn: configService.get<string>('jwt.expiresIn'),
+        },
+      }),
+    }),
+    TelegramModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],

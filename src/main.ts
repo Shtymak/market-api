@@ -1,3 +1,4 @@
+import { TelegramService } from './telegram/telegram.service';
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -9,10 +10,10 @@ const logger = new Logger('bootstrap');
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+  const telegramService = app.get(TelegramService);
 
   const PORT = configService.get<number>('port');
   const BASE_URL = `${configService.get<string>('baseUrl')}:${PORT}`;
-
   const config = new DocumentBuilder()
     .setTitle('NestJS API')
     .setDescription('API Documentation')
@@ -25,5 +26,6 @@ async function bootstrap() {
   logger.debug(`Application listening on port: [${PORT}]`);
   logger.debug(`Full url: ${BASE_URL}`);
   logger.debug(`Docs: ${BASE_URL}/api/docs`);
+  // telegramService.subscribe();
 }
 bootstrap();

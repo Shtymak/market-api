@@ -1,3 +1,5 @@
+import { TransformFileDto } from './../uploads/dto/transformFile.dto';
+import { UploadsService } from './../uploads/uploads.service';
 import { GetUserDto } from './dto/get-user.dto';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,15 +10,19 @@ import { User, UserDocument } from './user.model';
 import { faker } from '@faker-js/faker';
 import * as bcrypt from 'bcrypt';
 import { Roles } from 'src/types/Roles.enum';
+import * as path from 'path';
+import * as uuid from 'uuid';
+import { CloudinaryUpload } from 'src/uploads/cloudnary.upload';
 @Injectable()
 export class UsersService {
-  comparePassword(password: string, password1: string) {
-    return bcrypt.compare(password, password1);
-  }
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private readonly uploadsService: UploadsService,
   ) {}
   private logger = new Logger(UsersService.name);
+  public comparePassword(password: string, password1: string) {
+    return bcrypt.compare(password, password1);
+  }
   async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
     try {
       const password = await bcrypt.hash(createUserDto.password, 10);
@@ -112,6 +118,42 @@ export class UsersService {
     try {
       const deletedUser = await this.userModel.findByIdAndRemove(id);
       return new GetUserDto(deletedUser);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async findByPhone(phone: string): Promise<GetUserDto> {
+    try {
+      const user = await this.userModel.findOne({ phone: phone });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      this.logger.debug(user);
+      const returnUser = new GetUserDto(user);
+      return returnUser;
+    } catch (e: any) {
+      this.logger.error(e);
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async uploadAvatar(id: string, dto: TransformFileDto) {
+    try {
+      const { file } = dto;
+      const fileName = `${uuid.v4()}${path.extname(file.originalname)}`;
+      const avatarUrl = await this.uploadsService.uploadFile(
+        fileName,
+        file.buffer,
+        new CloudinaryUpload(),
+      );
+      const updatedUser = await this.userModel.findOneAndUpdate(
+        { _id: id },
+        { avatar: avatarUrl },
+        { new: true },
+      );
+      return new GetUserDto(updatedUser);
     } catch (e: any) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
