@@ -1,3 +1,4 @@
+import { logger } from '@azure/storage-blob';
 import {
   CanActivate,
   Injectable,
@@ -27,6 +28,11 @@ export class RolesGuard implements CanActivate {
       }
       const request = context.switchToHttp().getRequest();
       const authHeader = request.headers.authorization;
+      if (!authHeader) {
+        throw new UnauthorizedException({
+          message: 'User is not authorized',
+        });
+      }
       const bearer = authHeader.split(' ')[0];
       const token = authHeader.split(' ')[1];
       if (bearer !== 'Bearer' || !token) {
@@ -36,7 +42,10 @@ export class RolesGuard implements CanActivate {
       }
       const user = this.jwtService.verify(token);
       request.user = user;
-      return user.roles.some((role) => requiredRoles.includes(role.value));
+      const permission = user.roles.some((role) =>
+        requiredRoles.includes(role),
+      );
+      return permission;
     } catch (error) {
       this.logger.error(`RolesGuard error: ${error.message}`);
       throw new HttpException(error.message, error.status);

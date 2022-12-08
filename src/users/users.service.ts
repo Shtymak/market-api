@@ -68,7 +68,7 @@ export class UsersService {
 
       this.logger.debug(`User found: ${user}`);
       const returnUser = new GetUserDto(user);
-      this.logger.debug(`User found: ${returnUser}`);
+      this.logger.debug(`User found 2: ${returnUser}`);
       return returnUser;
     } catch (e: any) {
       this.logger.error(e.message);
