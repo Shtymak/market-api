@@ -1,19 +1,18 @@
-import { TelegramService } from './telegram/telegram.service';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
 
 const logger = new Logger('bootstrap');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-  const telegramService = app.get(TelegramService);
 
   const PORT = configService.get<number>('port');
   const BASE_URL = `${configService.get<string>('baseUrl')}:${PORT}`;
+  app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
     .setTitle('NestJS API')
     .setDescription('API Documentation')

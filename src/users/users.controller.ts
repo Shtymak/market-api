@@ -16,6 +16,7 @@ import {
   UploadedFile,
   Req,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -35,6 +36,7 @@ import { Roles as PermissionRoles } from 'src/types/Roles.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SharpPipe } from 'pipes/sharp.pipe';
 import { TransformFileDto } from 'src/uploads/dto/transformFile.dto';
+import { PaginationDto } from 'src/types/pagination.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -73,8 +75,8 @@ export class UsersController {
   @ApiResponse({ type: [GetUserDto], status: HttpStatus.OK })
   @UseGuards(RolesGuard)
   @Roles(PermissionRoles.ADMIN, PermissionRoles.MODERATOR)
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query() query: PaginationDto) {
+    return this.usersService.findAll(query);
   }
 
   @Get(':id')

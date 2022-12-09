@@ -1,3 +1,4 @@
+import { PaginationDto } from './../types/pagination.dto';
 import { TransformFileDto } from './../uploads/dto/transformFile.dto';
 import { UploadsService } from './../uploads/uploads.service';
 import { GetUserDto } from './dto/get-user.dto';
@@ -38,9 +39,10 @@ export class UsersService {
     }
   }
 
-  async findAll() {
+  async findAll({ page, limit }: PaginationDto) {
     try {
-      const users = await this.userModel.find();
+      const offset = (page - 1) * limit;
+      const users = await this.userModel.find().skip(offset).limit(limit);
       return users.map((user) => new GetUserDto(user));
     } catch (e: any) {
       this.logger.error(e.message);
@@ -66,14 +68,17 @@ export class UsersService {
         .select('+password')
         .exec();
 
-      this.logger.debug(`User found: ${user}`);
       const returnUser = new GetUserDto(user);
-      this.logger.debug(`User found 2: ${returnUser}`);
       return returnUser;
     } catch (e: any) {
       this.logger.error(e.message);
       throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async findByEmailWithPassword(email: string): Promise<User> {
+    const user = await this.userModel.findOne({ email }).exec();
+    return user;
   }
 
   async createRandomUsers(count: number): Promise<GetUserDto[]> {

@@ -54,7 +54,11 @@ export class AuthController {
     @Res() response: Response,
   ) {
     try {
+      console.log(body);
+
       const token = await this.authService.loginWithPassword(body);
+      console.log(token);
+
       response.status(HttpStatus.OK).json(token);
     } catch (e) {
       response.status(e.status).json({

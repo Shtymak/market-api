@@ -70,10 +70,12 @@ export class AuthService {
     input: LoginWithPasswordDto,
   ): Promise<GetAuthDto> {
     try {
-      const user = await this.UsersService.findByEmail(input.email);
+      const user = await this.UsersService.findByEmailWithPassword(input.email);
       if (!user) {
         throw new NotFoundException('User not found');
       }
+      this.logger.debug(user);
+      this.logger.debug({ inp: input.password, user: user.password });
       const isPasswordValid = await this.UsersService.comparePassword(
         input.password,
         user.password,
@@ -81,13 +83,18 @@ export class AuthService {
       if (!isPasswordValid) {
         throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
       }
-      const accessToken = this.generateToken(user);
+      const accessToken = this.generateToken(new GetUserDto(user));
       return {
         token: accessToken,
-        user,
+        user: new GetUserDto(user),
       };
     } catch (e) {
-      throw new HttpException(e.message, e.status);
+      console.log(e);
+
+      throw new HttpException(
+        e.message,
+        e.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
