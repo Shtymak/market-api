@@ -1,19 +1,25 @@
+import { faker } from '@faker-js/faker';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
+import { Model } from 'mongoose';
+import * as path from 'path';
+import { Roles } from 'src/types/Roles.enum';
+import { CloudinaryUpload } from 'src/uploads/cloudnary.upload';
+import * as uuid from 'uuid';
 import { PaginationDto } from './../types/pagination.dto';
 import { TransformFileDto } from './../uploads/dto/transformFile.dto';
 import { UploadsService } from './../uploads/uploads.service';
-import { GetUserDto } from './dto/get-user.dto';
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
+import { GetUserDto } from './dto/get-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User, UserDocument } from './user.model';
-import { faker } from '@faker-js/faker';
-import * as bcrypt from 'bcrypt';
-import { Roles } from 'src/types/Roles.enum';
-import * as path from 'path';
-import * as uuid from 'uuid';
-import { CloudinaryUpload } from 'src/uploads/cloudnary.upload';
 @Injectable()
 export class UsersService {
   constructor(
@@ -61,12 +67,34 @@ export class UsersService {
     }
   }
 
+  public async updatePassword(
+    userId: string,
+    password: string,
+  ): Promise<GetUserDto> {
+    try {
+      const hash = await bcrypt.hash(password, 10);
+      const updated = await this.userModel.findByIdAndUpdate(userId, {
+        password: hash,
+      });
+      if (!updated) {
+        throw new NotFoundException('User not found');
+      }
+      return new GetUserDto(updated);
+    } catch (e: any) {
+      this.logger.error(e.message);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   async findByEmail(email: string): Promise<GetUserDto> {
     try {
       const user = await this.userModel
         .findOne({ email })
         .select('+password')
         .exec();
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
       const returnUser = new GetUserDto(user);
       return returnUser;

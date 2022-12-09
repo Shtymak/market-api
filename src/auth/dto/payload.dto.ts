@@ -3,7 +3,7 @@ import { Roles } from 'src/types/Roles.enum';
 
 export class PayloadDto {
   @ApiProperty({ example: '1', description: 'User id' })
-  id: number;
+  id: string;
   @ApiProperty({ example: 'user@gmail.com', description: 'Mail of user' })
   email: string;
   @ApiProperty({ example: '[USER]', description: 'Roles of user' })

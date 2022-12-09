@@ -1,8 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail } from 'class-validator';
+import { AuthMailDto } from './auth-mail.dto';
 
-export class SendCodeDto {
-  @ApiProperty({ example: 'vsh.gmail.com' })
-  @IsEmail()
-  email: string;
-}
+export class SendCodeDto extends AuthMailDto {}

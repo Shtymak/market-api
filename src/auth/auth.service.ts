@@ -20,6 +20,7 @@ import { GetAuthDto } from './dto/get-auth.dto';
 import { MagicLinkDto } from './dto/magic-link.dto';
 import { PayloadDto } from './dto/payload.dto';
 import { LoginLink, LoginLinkDocument } from './login-link.model';
+import { FullUserDto } from 'src/users/dto/full-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,7 @@ export class AuthService {
     private readonly linkModel: Model<LoginLinkDocument>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly UsersService: UsersService,
+    private readonly usersService: UsersService,
     private readonly mailService: MailService,
   ) {}
   private logger = new Logger(AuthService.name);
@@ -55,7 +56,7 @@ export class AuthService {
 
   public async registration(user: CreateUserDto): Promise<GetAuthDto> {
     try {
-      const newUser = await this.UsersService.create(user);
+      const newUser = await this.usersService.create(user);
       const accessToken = this.generateToken(newUser);
       return {
         token: accessToken,
@@ -70,13 +71,13 @@ export class AuthService {
     input: LoginWithPasswordDto,
   ): Promise<GetAuthDto> {
     try {
-      const user = await this.UsersService.findByEmailWithPassword(input.email);
+      const user = await this.usersService.findByEmailWithPassword(input.email);
       if (!user) {
         throw new NotFoundException('User not found');
       }
       this.logger.debug(user);
       this.logger.debug({ inp: input.password, user: user.password });
-      const isPasswordValid = await this.UsersService.comparePassword(
+      const isPasswordValid = await this.usersService.comparePassword(
         input.password,
         user.password,
       );
@@ -100,7 +101,7 @@ export class AuthService {
 
   public async magicLogin(dto: MagicLinkDto): Promise<GetAuthDto> {
     try {
-      const candidate = await this.UsersService.findByEmail(dto.email);
+      const candidate = await this.usersService.findByEmail(dto.email);
       if (!candidate) {
         throw new NotFoundException('User not found');
       }
@@ -142,7 +143,7 @@ export class AuthService {
   }
   public async sendLoginMagicLink(email: string): Promise<boolean> {
     try {
-      const user = await this.UsersService.findByEmail(email);
+      const user = await this.usersService.findByEmail(email);
       this.logger.debug(`User: ${JSON.stringify(user)}`);
       const accessCode = this.generateAccessCode();
       const data: CreateMailDto = {
@@ -161,6 +162,69 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Error on send magic link: ${error}`);
       throw new NotFoundException();
+    }
+  }
+  public async sendResetPasswordLink(email: string) {
+    try {
+      const user = await this.usersService.findByEmail(email);
+      const uui = uuid.v4();
+      await this.linkModel.create({
+        link: `${uui}`,
+        user: user.id,
+        isActived: false,
+      });
+      const data: CreateMailDto = {
+        to: email,
+        subject: `Reset password for ${user.email}`,
+        content: `<h1>Reset Link: ${this.configService.get(
+          'baseUrl',
+        )}/auth/reset/password/${uui}
+        }</h1>`,
+      };
+      await this.mailService.sendResetLink(data);
+    } catch (error) {}
+  }
+
+  public async resetPassword(uud: string) {
+    try {
+      const link = await this.linkModel.findOne({ link: uud });
+      if (!link) {
+        throw new NotFoundException('Failed to reset password');
+      }
+      if (link.isActived) {
+        throw new HttpException(
+          'Failed to reset password',
+          HttpStatus.FORBIDDEN,
+        );
+      }
+      const user = await this.usersService.findOne(link.user);
+      if (!user) {
+        throw new NotFoundException('Failed to reset password! User not found');
+      }
+      const password = uuid.v4();
+      const update = await this.usersService.updatePassword(user.id, password);
+      if (!update) {
+        throw new HttpException(
+          'Failed to reset password',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      await this.linkModel.updateOne(
+        { _id: link._id },
+        { isActived: true },
+        { new: true },
+      );
+      const data: CreateMailDto = {
+        to: user.email,
+        subject: `Reset password for ${user.email}`,
+        content: `<h1>New password: ${password}</h1>`,
+      };
+
+      await this.mailService.sendPasswordChanged(data);
+      return true;
+    } catch (error) {
+      this.logger.error(`Error on reset password: ${error}`);
+      throw new HttpException(error.message, error.status);
     }
   }
 

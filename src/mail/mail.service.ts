@@ -12,6 +12,18 @@ export class MailService {
   ) {}
 
   async sendMagicLink(data: CreateMailDto): Promise<boolean> {
+    return await this.sendMail(data);
+  }
+
+  async sendResetLink(data: CreateMailDto): Promise<boolean> {
+    return await this.sendMail(data);
+  }
+
+  async sendPasswordChanged(data: CreateMailDto): Promise<boolean> {
+    return await this.sendMail(data);
+  }
+
+  private async sendMail(data: CreateMailDto): Promise<boolean> {
     const send = await this.mailService.sendMail({
       to: data.to,
       subject: data.subject,

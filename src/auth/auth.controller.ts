@@ -1,7 +1,16 @@
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { LoginWithPasswordDto } from './dto/password-login.dto';
 import { CreateUserDto } from './../users/dto/create-user.dto';
 import { GetAuthDto } from './dto/get-auth.dto';
-import { Body, Controller, HttpStatus, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Res,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -16,6 +25,7 @@ import { AuthService } from './auth.service';
 import { MagicLinkDto } from './dto/magic-link.dto';
 import { SendCodeDto } from './dto/send-code.dto';
 import { SendCodeResponseDto } from './dto/send-code-response.dto';
+import { AuthMailDto } from './dto/auth-mail.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -91,6 +101,39 @@ export class AuthController {
   async register(@Body() body: CreateUserDto, @Res() response: Response) {
     try {
       const token = await this.authService.registration(body);
+      response.status(HttpStatus.OK).json(token);
+    } catch (e) {
+      response.status(e.status).json({
+        message: e.message,
+      });
+    }
+  }
+  @Post('reset/password/send')
+  @ApiOperation({
+    summary: 'Reset password email',
+  })
+  @ApiBody({ type: AuthMailDto })
+  @ApiResponse({ status: HttpStatus.OK, type: Boolean })
+  async reset(@Body() body: AuthMailDto, @Res() response: Response) {
+    try {
+      const dto = await this.authService.sendResetPasswordLink(body.email);
+      return response
+        .status(HttpStatus.OK)
+        .json({ message: 'Password reset mail sent', flag: dto });
+    } catch (e) {
+      response.status(e.status).json({
+        message: e.message,
+      });
+    }
+  }
+
+  @Get('reset/password/:uuid')
+  @ApiOperation({ summary: 'Reset password' })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAuthDto })
+  @ApiBody({ type: ResetPasswordDto })
+  async resetPassword(@Res() response: Response, @Param('uuid') uuid: string) {
+    try {
+      const token = await this.authService.resetPassword(uuid);
       response.status(HttpStatus.OK).json(token);
     } catch (e) {
       response.status(e.status).json({
