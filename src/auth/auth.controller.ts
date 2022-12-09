@@ -135,8 +135,18 @@ export class AuthController {
   async resetPassword(@Res() response: Response, @Param('uuid') uuid: string) {
     try {
       await this.authService.resetPassword(uuid);
-      const thatkYouHtml = path.resolve(__dirname, './thank.you.page.html');
-      response.sendFile(thatkYouHtml);
+      const thatkYouHtml = `
+      <html>
+      <head>
+      <title>Thank you</title>
+      </head>
+      <body>
+      <h1>Thank you for resetting your password</h1>
+      <p>Now you can login with your new password</p>
+      </body>
+      </html>
+      `;
+      response.status(HttpStatus.OK).send(thatkYouHtml);
     } catch (e) {
       response.status(e.status).json({
         message: e.message,
