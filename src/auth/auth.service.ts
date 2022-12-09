@@ -201,7 +201,7 @@ export class AuthService {
       if (!user) {
         throw new NotFoundException('Failed to reset password! User not found');
       }
-      const password = uuid.v4();
+      const password = uuid.v4().slice(0, 30);
       const update = await this.usersService.updatePassword(user.id, password);
       if (!update) {
         throw new HttpException(
