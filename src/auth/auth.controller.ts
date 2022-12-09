@@ -26,6 +26,7 @@ import { MagicLinkDto } from './dto/magic-link.dto';
 import { SendCodeDto } from './dto/send-code.dto';
 import { SendCodeResponseDto } from './dto/send-code-response.dto';
 import { AuthMailDto } from './dto/auth-mail.dto';
+import * as path from 'path';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -133,8 +134,9 @@ export class AuthController {
   @ApiBody({ type: ResetPasswordDto })
   async resetPassword(@Res() response: Response, @Param('uuid') uuid: string) {
     try {
-      const token = await this.authService.resetPassword(uuid);
-      response.status(HttpStatus.OK).json(token);
+      await this.authService.resetPassword(uuid);
+      const thatkYouHtml = path.resolve(__dirname, './thank.you.page.html');
+      response.sendFile(thatkYouHtml);
     } catch (e) {
       response.status(e.status).json({
         message: e.message,
