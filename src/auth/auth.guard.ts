@@ -5,17 +5,19 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
+import { RedisService } from 'src/redis/redis.service';
+import { TokenValidationDto } from './dto/token-validation.dto';
 const ERROR_MESSAGE = 'User is not authorized';
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private redisService: RedisService,
+  ) {}
 
   private logger = new Logger(JwtAuthGuard.name);
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest();
     try {
       const authHeader = req.headers.authorization;
@@ -29,6 +31,22 @@ export class JwtAuthGuard implements CanActivate {
       }
 
       const user = this.jwtService.verify(token);
+      const validationData = await this.redisService.get(user.id);
+
+      if (!validationData) {
+        throw new UnauthorizedException({
+          message: 'User is not authorized',
+        });
+      }
+      const { tokens }: TokenValidationDto = JSON.parse(validationData);
+      const thisToken = tokens.find((t) => t.token === token);
+
+      if (!thisToken || !thisToken.isValid) {
+        throw new UnauthorizedException({
+          message: ERROR_MESSAGE,
+        });
+      }
+
       req.user = user;
       return true;
     } catch (e: any) {

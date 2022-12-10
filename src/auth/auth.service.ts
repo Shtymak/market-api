@@ -1,3 +1,4 @@
+import { TokenValidationDto } from './dto/token-validation.dto';
 import {
   HttpException,
   HttpStatus,
@@ -87,8 +88,16 @@ export class AuthService {
         throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
       }
       const accessToken = this.generateToken(new GetUserDto(user));
-      this.redisService.set(user.id, accessToken);
-      this.logger.debug(`Token: ${this.redisService.get(user.id)}`);
+      const userTokens = await this.redisService.get(user.id);
+      let tokens = [];
+      if (userTokens) {
+        tokens = JSON.parse(userTokens);
+      }
+      tokens.push({
+        token: accessToken,
+        isValid: true,
+      });
+      await this.redisService.set(user.id, JSON.stringify({ tokens }));
       return {
         token: accessToken,
         user: new GetUserDto(user),
