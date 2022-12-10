@@ -1,7 +1,3 @@
-import { ResetPasswordDto } from './dto/reset-password.dto';
-import { LoginWithPasswordDto } from './dto/password-login.dto';
-import { CreateUserDto } from './../users/dto/create-user.dto';
-import { GetAuthDto } from './dto/get-auth.dto';
 import {
   Body,
   Controller,
@@ -21,12 +17,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
+import { CreateUserDto } from './../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
-import { MagicLinkDto } from './dto/magic-link.dto';
-import { SendCodeDto } from './dto/send-code.dto';
-import { SendCodeResponseDto } from './dto/send-code-response.dto';
 import { AuthMailDto } from './dto/auth-mail.dto';
-import * as path from 'path';
+import { GetAuthDto } from './dto/get-auth.dto';
+import { MagicLinkDto } from './dto/magic-link.dto';
+import { LoginWithPasswordDto } from './dto/password-login.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SendCodeResponseDto } from './dto/send-code-response.dto';
+import { SendCodeDto } from './dto/send-code.dto';
 import { ThankYouPage } from './thank.you.page';
 @ApiTags('auth')
 @Controller('auth')

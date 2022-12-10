@@ -25,6 +25,7 @@ async function bootstrap() {
   logger.debug(`Application listening on port: [${PORT}]`);
   logger.debug(`Full url: ${BASE_URL}`);
   logger.debug(`Docs: ${BASE_URL}/api/docs`);
+  logger.debug(`Redis: ${configService.get<string>('redis.url')}`);
   // telegramService.subscribe();
 }
 bootstrap();

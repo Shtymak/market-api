@@ -1,3 +1,4 @@
+import { FullUserDto } from 'src/users/dto/full-user.dto';
 import { faker } from '@faker-js/faker';
 import {
   HttpException,
@@ -104,9 +105,9 @@ export class UsersService {
     }
   }
 
-  async findByEmailWithPassword(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email }).exec();
-    return user;
+  async findByEmailWithPassword(email: string): Promise<FullUserDto> {
+    const user = await this.userModel.findOne({ email });
+    return new FullUserDto(user);
   }
 
   async createRandomUsers(count: number): Promise<GetUserDto[]> {

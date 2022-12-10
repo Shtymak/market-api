@@ -35,4 +35,9 @@ export const config = () => ({
   telegram: {
     token: process.env.TELEGRAM_TOKEN,
   },
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    ttl: parseInt(process.env.REDIS_SESSION_LIFE_TIME, 10) || 60 * 60,
+    password: process.env.REDIS_PASSWORD,
+  },
 });

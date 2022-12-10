@@ -1,4 +1,3 @@
-import { LoginWithPasswordDto } from './dto/password-login.dto';
 import {
   HttpException,
   HttpStatus,
@@ -12,15 +11,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateMailDto } from 'src/mail/dto/create-mail.dto';
 import { MailService } from 'src/mail/mail.service';
+import { RedisService } from 'src/redis/redis.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { User } from 'src/users/user.model';
 import * as uuid from 'uuid';
 import { GetUserDto } from './../users/dto/get-user.dto';
 import { UsersService } from './../users/users.service';
 import { GetAuthDto } from './dto/get-auth.dto';
 import { MagicLinkDto } from './dto/magic-link.dto';
+import { LoginWithPasswordDto } from './dto/password-login.dto';
 import { PayloadDto } from './dto/payload.dto';
 import { LoginLink, LoginLinkDocument } from './login-link.model';
-import { FullUserDto } from 'src/users/dto/full-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,6 +32,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly mailService: MailService,
+    private readonly redisService: RedisService,
   ) {}
   private logger = new Logger(AuthService.name);
 
@@ -85,6 +87,8 @@ export class AuthService {
         throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
       }
       const accessToken = this.generateToken(new GetUserDto(user));
+      this.redisService.set(user.id, accessToken);
+      this.logger.debug(`Token: ${this.redisService.get(user.id)}`);
       return {
         token: accessToken,
         user: new GetUserDto(user),

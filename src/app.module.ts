@@ -12,6 +12,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TelegramModule } from './telegram/telegram.module';
       }),
     }),
     TelegramModule,
+    RedisModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],

@@ -11,6 +11,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { FullUserDto } from './full-user.dto';
 
 const minPasswordLength = 8;
 const maxPasswordLength = 32;
@@ -55,7 +56,7 @@ export class CreateUserDto extends BaseEntity {
   @ApiProperty({ example: 'xxxxxxxxxxxxxxxx', description: 'Google Id' })
   googleId: string;
 
-  constructor(model: User) {
+  constructor(model: User | FullUserDto) {
     super(model);
     this.email = model.email;
     this.password = model.password;

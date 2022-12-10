@@ -21,4 +21,7 @@ export const validationSchema = Joi.object({
   CLOUDINARY_API_KEY: Joi.string().required(),
   CLOUDINARY_API_SECRET: Joi.string().required(),
   TELEGRAM_TOKEN: Joi.string().required(),
+  REDIS_URL: Joi.string().default('redis://localhost:6379'),
+  REDIS_SESSION_LIFE_TIME: Joi.number().default(60 * 60),
+  REDIS_PASSWORD: Joi.string().required(),
 });

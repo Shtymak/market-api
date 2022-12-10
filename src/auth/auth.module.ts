@@ -1,3 +1,4 @@
+import { RedisModule } from './../redis/redis.module';
 import { LoginLink, LoginLinkSchema } from './login-link.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './../users/users.module';
@@ -23,6 +24,7 @@ import { MailModule } from 'src/mail/mail.module';
       { name: LoginLink.name, schema: LoginLinkSchema },
     ]),
     MailModule,
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
