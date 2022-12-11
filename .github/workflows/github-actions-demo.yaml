@@ -1,6 +1,36 @@
 name: GitHub Actions Demo
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ development, master ]
+env:
+  PORT: 9990
+  BASE_URL: http://localhost
+  DATABASE_URI: mongodb+srv://cloud:tLfb9kxk1uicS@cluster0.pdawhx9.mongodb.net/db?retryWrites=true&w=majority
+  JWT_SECRET: secret
+  JWT_EXPIRES_IN: 90d
+  HOST_URL: http://localhost:9990
+  MAIL_HOST: smtp.gmail.com
+  MAIL_PORT: 587
+  MAIL_USERNAME: eatandsport.app@gmail.com
+  MAIL_SECURE: true
+  MAIL_AUTH_USER: eatandsport.app@gmail.com
+  MAIL_AUTH_PASS: fcljxewqmrvbuere
+  MAIL_DEFAULTS_FROM: Eat&Sport
+  AZURE_CONNECTION_STRING: none
+  AZURE_CONTAINER_NAME: none
+  AZURE_ACCOUNT_NAME: none
+  AZURE_CONTAINER_URL: none
+  CLOUDINARY_CLOUD_NAME: ddpxqsxz6
+  CLOUDINARY_API_KEY: 989335351593938
+  CLOUDINARY_API_SECRET: rx9fLOCfPJ-OF8Ys6cw174M-Byg
+  TELEGRAM_TOKEN: 5877776820:AAGtJhZMXN8rp6ZW2qZZURJC1y_-BC7E1-0
+  REDIS_URL: rediss://:pc9cd952c442bdce59255d3c55c4e31bdcfd4a9dd91336896461dc8d33c46bdc1@ec2-23-23-247-176.compute-1.amazonaws.com:24000
+  REDIS_PASSWORD: pc9cd952c442bdce59255d3c55c4e31bdcfd4a9dd91336896461dc8d33c46bdc1
+  NODE_TLS_REJECT_UNAUTHORIZED: 0
+
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
@@ -19,5 +49,6 @@ jobs:
         run: npm run build
       - name: e2e test
         run: npm run test:e2e
+
 
      
