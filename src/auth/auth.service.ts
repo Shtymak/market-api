@@ -1,4 +1,3 @@
-import { TokenValidationDto } from './dto/token-validation.dto';
 import {
   HttpException,
   HttpStatus,
@@ -14,7 +13,6 @@ import { CreateMailDto } from 'src/mail/dto/create-mail.dto';
 import { MailService } from 'src/mail/mail.service';
 import { RedisService } from 'src/redis/redis.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { User } from 'src/users/user.model';
 import * as uuid from 'uuid';
 import { GetUserDto } from './../users/dto/get-user.dto';
 import { UsersService } from './../users/users.service';
@@ -146,6 +144,16 @@ export class AuthService {
         { new: true },
       );
       const accessToken = this.generateToken(candidate);
+      const userTokens = await this.redisService.get(candidate.id);
+      let tokens = [];
+      if (userTokens) {
+        tokens = JSON.parse(userTokens);
+      }
+      tokens.push({
+        token: accessToken,
+        isValid: true,
+      });
+      await this.redisService.set(candidate.id, JSON.stringify({ tokens }));
       return {
         token: accessToken,
         user: candidate,
