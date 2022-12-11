@@ -206,6 +206,35 @@ export class AuthService {
     } catch (error) {}
   }
 
+  public async logout(token: string): Promise<boolean> {
+    try {
+      const decoded: PayloadDto = this.jwtService.verify(token);
+      const userTokens = await this.redisService.get(decoded.id);
+      if (!userTokens) {
+        throw new NotFoundException('Token not found');
+      }
+      const { tokens } = JSON.parse(userTokens);
+      const newTokens = tokens.filter((t) => t.token !== token);
+      await this.redisService.set(
+        decoded.id,
+        JSON.stringify({ tokens: newTokens }),
+      );
+      return true;
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async logoutAll(token: string): Promise<boolean> {
+    try {
+      const decoded: PayloadDto = this.jwtService.verify(token);
+      await this.redisService.del(decoded.id);
+      return true;
+    } catch (e) {
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   public async resetPassword(uud: string) {
     try {
       const link = await this.linkModel.findOne({ link: uud });

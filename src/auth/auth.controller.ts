@@ -1,3 +1,4 @@
+import { JwtAuthGuard } from './auth.guard';
 import {
   Body,
   Controller,
@@ -5,7 +6,9 @@ import {
   HttpStatus,
   Param,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -16,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { CreateUserDto } from './../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { AuthMailDto } from './dto/auth-mail.dto';
@@ -27,6 +30,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SendCodeResponseDto } from './dto/send-code-response.dto';
 import { SendCodeDto } from './dto/send-code.dto';
 import { ThankYouPage } from './thank.you.page';
+
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -65,12 +69,24 @@ export class AuthController {
     @Res() response: Response,
   ) {
     try {
-      console.log(body);
-
       const token = await this.authService.loginWithPassword(body);
-      console.log(token);
-
       response.status(HttpStatus.OK).json(token);
+    } catch (e) {
+      response.status(e.status).json({
+        message: e.message,
+      });
+    }
+  }
+
+  @Get('logout')
+  @ApiResponse({ status: HttpStatus.OK, type: String })
+  @ApiNotFoundResponse({ description: 'Token is not found' })
+  @UseGuards(JwtAuthGuard)
+  async logout(@Req() req: Request, @Res() response: Response) {
+    try {
+      const token = req.headers['authorization'].split(' ')[1];
+      await this.authService.logout(token);
+      response.status(HttpStatus.OK).json({ message: 'Logged out' });
     } catch (e) {
       response.status(e.status).json({
         message: e.message,
