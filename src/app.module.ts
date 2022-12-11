@@ -1,18 +1,18 @@
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { UsersModule } from './users/users.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { validationSchema } from 'config/validation';
+import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import { validationSchema } from '../config/validation';
 import { config } from '../config/configuration';
 import { AppController } from './app.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import { UsersController } from './users/users.controller';
-import { RolesModule } from './roles/roles.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
-import { UploadsModule } from './uploads/uploads.module';
-import { TelegramModule } from './telegram/telegram.module';
 import { RedisModule } from './redis/redis.module';
+import { RolesModule } from './roles/roles.module';
+import { TelegramModule } from './telegram/telegram.module';
+import { UploadsModule } from './uploads/uploads.module';
+import { UsersController } from './users/users.controller';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [

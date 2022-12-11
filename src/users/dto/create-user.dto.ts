@@ -1,7 +1,7 @@
 import { Roles } from './../../types/Roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../user.model';
-import { BaseEntity } from 'src/types/Base.entity';
+import { BaseEntity } from '../../types/Base.entity';
 import {
   IsBoolean,
   IsDateString,

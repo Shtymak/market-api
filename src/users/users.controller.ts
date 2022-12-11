@@ -31,12 +31,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { Response } from 'express';
-import { Roles } from 'src/roles/roles.decorator';
-import { Roles as PermissionRoles } from 'src/types/Roles.enum';
+import { Roles } from '../roles/roles.decorator';
+import { Roles as PermissionRoles } from '../types/Roles.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { SharpPipe } from 'pipes/sharp.pipe';
-import { TransformFileDto } from 'src/uploads/dto/transformFile.dto';
-import { PaginationDto } from 'src/types/pagination.dto';
+import { SharpPipe } from '../../pipes/sharp.pipe';
+import { TransformFileDto } from '../uploads/dto/transformFile.dto';
+import { PaginationDto } from '../types/pagination.dto';
 
 @ApiTags('users')
 @Controller('users')

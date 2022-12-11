@@ -1,18 +1,16 @@
-import { RedisService } from './../redis/redis.service';
-import { logger } from '@azure/storage-blob';
 import {
   CanActivate,
-  Injectable,
   ExecutionContext,
-  ForbiddenException,
-  UnauthorizedException,
   HttpException,
+  Injectable,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { TokenValidationDto } from '../auth/dto/token-validation.dto';
+import { RedisService } from './../redis/redis.service';
 import { ROLES_KEY } from './roles.decorator';
-import { TokenValidationDto } from 'src/auth/dto/token-validation.dto';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
