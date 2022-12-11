@@ -94,6 +94,22 @@ export class AuthController {
     }
   }
 
+  @Get('logout/all')
+  @ApiResponse({ status: HttpStatus.OK, type: String })
+  @ApiNotFoundResponse({ description: 'Token is not found' })
+  @UseGuards(JwtAuthGuard)
+  async logoutAll(@Req() req: Request, @Res() response: Response) {
+    try {
+      const token = req.headers['authorization'].split(' ')[1];
+      await this.authService.logoutAll(token);
+      response.status(HttpStatus.OK).json({ message: 'Logged out' });
+    } catch (e) {
+      response.status(e.status).json({
+        message: e.message,
+      });
+    }
+  }
+
   @ApiOperation({ summary: 'Login with magic code' })
   @ApiBody({ type: MagicLinkDto })
   @ApiResponse({ status: HttpStatus.OK, type: SendCodeResponseDto })
