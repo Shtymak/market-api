@@ -91,6 +91,7 @@ export class AuthService {
       if (userTokens) {
         tokens = JSON.parse(userTokens);
       }
+      this.logger.debug(`Tokens: ${JSON.stringify(tokens)}`);
       tokens.push({
         token: accessToken,
         isValid: true,
