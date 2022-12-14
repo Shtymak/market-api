@@ -89,7 +89,7 @@ export class AuthService {
       const userTokens = await this.redisService.get(user.id);
       let tokens = [];
       if (userTokens) {
-        tokens = JSON.parse(userTokens);
+        tokens = JSON.parse(userTokens).tokens;
       }
       this.logger.debug(`Tokens: ${JSON.stringify(tokens)}`);
       tokens.push({
@@ -148,7 +148,7 @@ export class AuthService {
       const userTokens = await this.redisService.get(candidate.id);
       let tokens = [];
       if (userTokens) {
-        tokens = JSON.parse(userTokens);
+        tokens = JSON.parse(userTokens).tokens;
       }
       tokens.push({
         token: accessToken,
