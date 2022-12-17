@@ -6,7 +6,7 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  @ApiProperty({ example: '1', description: 'Id of user' })
+  @ApiProperty({ example: 'uuod-fsdf-sdfsdxvc-sdf', description: 'Id of user' })
   @Prop({ type: SchemaTypes.ObjectId, auto: true })
   id: string;
 
