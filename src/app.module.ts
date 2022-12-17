@@ -13,6 +13,9 @@ import { MailModule } from './mail/mail.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { RedisModule } from './redis/redis.module';
+import { CatalogModule } from './catalog/catalog.module';
+import { CategoryModule } from './category/category.module';
+import { ExemplarsModule } from './exemplars/exemplars.module';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { RedisModule } from './redis/redis.module';
     }),
     TelegramModule,
     RedisModule,
+    CatalogModule,
+    CategoryModule,
+    ExemplarsModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],
