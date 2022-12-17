@@ -64,7 +64,7 @@ export class GetUserDto extends BaseEntity {
     this.password = model.password;
     this.name = model.name;
     this.dateOfBirth = model.dateOfBirth;
-    this.avatar = model.avatar;
+    this.avatar = model.avatar || null;
     this.roles = model.roles;
     this.banned = model.banned;
     this.phone = model.phone;

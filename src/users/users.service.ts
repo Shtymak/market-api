@@ -33,6 +33,25 @@ export class UsersService {
   }
   async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
     try {
+      const alredyExist = await this.userModel.findOne({
+        $or: [
+          { email: createUserDto.email },
+          { name: createUserDto.name },
+          { phone: createUserDto.phone },
+        ],
+      });
+      if (alredyExist) {
+        const duplicate =
+          alredyExist.email === createUserDto.email
+            ? 'email'
+            : alredyExist.name === createUserDto.name
+            ? 'name'
+            : 'phone';
+        throw new HttpException(
+          `User with this ${duplicate} already exist`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const password = await bcrypt.hash(createUserDto.password, 10);
       const createdUser = await this.userModel.create({
         ...createUserDto,
@@ -42,7 +61,7 @@ export class UsersService {
       return new GetUserDto(createdUser);
     } catch (e: any) {
       this.logger.error(e.message);
-      throw e;
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
