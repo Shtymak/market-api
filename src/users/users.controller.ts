@@ -53,6 +53,8 @@ export class UsersController {
     @Body() createUserDto: CreateUserDto,
     @Res() response: Response,
   ) {
+    console.log('Create user dto', createUserDto);
+
     const user = await this.usersService.create(createUserDto);
     response.status(HttpStatus.CREATED).json(user);
   }

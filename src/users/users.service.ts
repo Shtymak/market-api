@@ -114,7 +114,7 @@ export class UsersService {
     const users = [];
     for (let i = 0; i < count; i++) {
       const hashedPassword = await bcrypt.hash(faker.internet.password(), 10);
-      const user: User = {
+      const user: CreateUserDto = {
         email: faker.internet.email(),
         password: hashedPassword,
         name: faker.name.firstName(),
