@@ -25,10 +25,6 @@ export class GetUserDto extends BaseEntity {
     example: 'fwipf123AA',
     description: 'Password for user account',
   })
-  @IsNotEmpty()
-  @Length(minPasswordLength, maxPasswordLength)
-  password: string;
-
   @ApiProperty({ example: 'Rostislav', description: 'Name of user' })
   @IsString()
   @Length(minNameLength, maxNameLength)
@@ -61,7 +57,6 @@ export class GetUserDto extends BaseEntity {
     this.createdAt = model.createdAt;
     this.updatedAt = model.updatedAt;
     this.email = model.email;
-    this.password = model.password;
     this.name = model.name;
     this.dateOfBirth = model.dateOfBirth;
     this.avatar = model.avatar || null;
