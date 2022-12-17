@@ -2,13 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Category } from 'src/category/category.model';
 import { ExemplarSize } from './exemplar-size.enum';
 import { ExemplarsColor } from './exemplars.color.map';
-export class CategoryItem {
-  @ApiProperty({
-    example: 'uuod-fsdf-sdfsdxvc-sdf',
-    description: 'Id of exemplar',
-  })
-  public id: string;
 
+class Item {
   @ApiProperty({ example: 'Rostislav', description: 'Name of exemplar' })
   public name: string;
 
@@ -29,20 +24,6 @@ export class CategoryItem {
 
   @ApiProperty({ example: 21.5, description: 'Price of item' })
   public price: number;
-
-  @ApiProperty({
-    example: 'XS',
-    description: 'Sizes of item',
-    type: [ExemplarSize],
-  })
-  public sizes: [ExemplarSize];
-
-  @ApiProperty({
-    example: 'red',
-    description: 'Colors of item',
-    type: [String],
-  })
-  public colors: [string];
 
   @ApiProperty({ example: 4.8, description: 'Rating of item' })
   public rating = 0;
@@ -67,4 +48,97 @@ export class CategoryItem {
 
   @ApiProperty({ example: 20, description: 'Discount' })
   discount?: number;
+
+  constructor(data: SimplePayload) {
+    this.name = data.name;
+    this.price = data.price;
+    this.category = data.category;
+  }
 }
+export class ClouthItem extends Item {
+  @ApiProperty({
+    example: 'XS',
+    description: 'Sizes of item',
+    type: [ExemplarSize],
+  })
+  public sizes: [ExemplarSize];
+
+  @ApiProperty({
+    example: 'red',
+    description: 'Colors of item',
+    type: [String],
+  })
+  public colors: [string];
+
+  constructor(data: Payload) {
+    super(data);
+    this.sizes = data.sizes;
+    this.colors = data.colors;
+  }
+}
+
+export class AccessoryItem extends Item {
+  @ApiProperty({ example: 'red', description: 'Color of item' })
+  public color: string;
+
+  constructor(data: Payload) {
+    super(data);
+    this.color = data.color;
+  }
+}
+
+export class ShoeItem extends Item {
+  @ApiProperty({ example: 'XS', description: 'Size of item' })
+  public sizes: [ExemplarSize];
+
+  @ApiProperty({ example: 'red', description: 'Color of item' })
+  public color: string;
+
+  @ApiProperty({ example: 'Sentetik', description: 'Material of item' })
+  public material: string;
+
+  constructor(data: Payload) {
+    super(data);
+    this.sizes = data.sizes;
+    this.color = data.color;
+    this.material = data.material;
+  }
+}
+
+export class ExemplarFactory {
+  public static exemplarTypes = {
+    clouth: ClouthItem,
+    accessory: AccessoryItem,
+    shoe: ShoeItem,
+  };
+
+  public static exemplarTypeKeys: Readonly<{
+    clouth: 'clouth';
+    accessory: 'accessory';
+    shoe: 'shoe';
+  }> = {
+    clouth: 'clouth',
+    accessory: 'accessory',
+    shoe: 'shoe',
+  };
+
+  public createExemplar(type: string, payload: Payload) {
+    const Exemplar =
+      ExemplarFactory.exemplarTypes[type] ||
+      ExemplarFactory.exemplarTypes.clouth;
+    return new Exemplar(payload);
+  }
+}
+
+type SimplePayload = {
+  name: string;
+  price: number;
+  category: Category;
+};
+
+type Payload = SimplePayload & {
+  sizes?: [ExemplarSize];
+  colors?: [string];
+  color?: string;
+  material?: string;
+};

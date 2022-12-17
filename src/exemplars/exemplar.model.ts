@@ -4,8 +4,8 @@ import { Document, SchemaTypes } from 'mongoose';
 import { ExemplarSize } from './exemplar-size.enum';
 import { ExemplarsColor } from './exemplars.color.map';
 import { Category } from 'src/category/category.model';
+import { Material } from './material.enum';
 export type ExemplarDocument = Exemplar & Document;
-
 @Schema()
 export class Exemplar {
   @ApiProperty({
@@ -42,14 +42,19 @@ export class Exemplar {
   @Prop({ required: true })
   price: number;
 
+  @ApiProperty({ example: Material.COTTON, description: 'Material of item' })
+  @Prop({ required: false, default: Material.COTTON })
+  material: Material;
+
   @ApiProperty({
     example: 'XS',
     description: 'Sizes of item',
-    type: [ExemplarSize],
+    type: [String],
+    examples: [ExemplarSize.XS, ExemplarSize.S, ExemplarSize.M],
   })
   @Prop({
-    type: [{ type: SchemaTypes.String, enum: ExemplarSize }],
-    required: true,
+    type: [{ type: SchemaTypes.String }],
+    required: false,
   })
   sizes: [ExemplarSize];
 

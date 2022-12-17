@@ -1,21 +1,21 @@
-import { CategoryItem } from '../exemplars/exemplar.factory';
+import { ClouthItem } from '../exemplars/exemplar.factory';
 
 abstract class Category {
-  items: CategoryItem[];
+  items: ClouthItem[];
 
   constructor() {
     this.items = [];
   }
 
-  async addItem(item: CategoryItem): Promise<void> {
+  async addItem(item: ClouthItem): Promise<void> {
     this.items.push(item);
   }
 
-  async getItems(): Promise<CategoryItem[]> {
+  async getItems(): Promise<ClouthItem[]> {
     return this.items;
   }
 
-  async removeItem(item: CategoryItem): Promise<void> {
+  async removeItem(item: ClouthItem): Promise<void> {
     this.items = this.items.filter((i) => i !== item);
   }
 
@@ -23,18 +23,18 @@ abstract class Category {
     this.items = [];
   }
 
-  async getItemByName(name: string): Promise<CategoryItem | undefined> {
+  async getItemByName(name: string): Promise<ClouthItem | undefined> {
     return this.items.find((i) => i.name === name);
   }
 
-  async getItemByPrice(price: number): Promise<CategoryItem | undefined> {
+  async getItemByPrice(price: number): Promise<ClouthItem | undefined> {
     return this.items.find((i) => i.price === price);
   }
 
   async getItemByPriceRange(
     min: number,
     max: number,
-  ): Promise<CategoryItem | undefined> {
+  ): Promise<ClouthItem | undefined> {
     return this.items.find((i) => i.price >= min && i.price <= max);
   }
 }
