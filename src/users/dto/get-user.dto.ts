@@ -1,19 +1,17 @@
-import { FullUserDto } from 'src/users/dto/full-user.dto';
-import { BaseEntity } from 'src/types/Base.entity';
-import { Roles } from '../../types/Roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDateString,
   IsEmail,
-  IsNotEmpty,
   IsPhoneNumber,
   IsString,
   Length,
 } from 'class-validator';
+import { BaseEntity } from 'src/types/Base.entity';
+import { FullUserDto } from 'src/users/dto/full-user.dto';
+import { Roles } from '../../types/Roles.enum';
 import { User } from '../user.model';
-const minPasswordLength = 8;
-const maxPasswordLength = 32;
+
 const minNameLength = 3;
 const maxNameLength = 21;
 export class GetUserDto extends BaseEntity {

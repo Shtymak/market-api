@@ -17,39 +17,72 @@ const maxPasswordLength = 32;
 const minNameLength = 3;
 const maxNameLength = 21;
 export class CreateUserDto {
-  @ApiProperty({ example: 'user@gmail.com', description: 'Mail of user' })
+  @ApiProperty({
+    example: 'user@gmail.com',
+    description: 'Mail of user',
+    required: true,
+  })
   @IsEmail()
   email: string;
 
   @ApiProperty({
     example: 'fwipf123AA',
     description: 'Password for user account',
+    required: true,
   })
   @IsNotEmpty()
   @Length(minPasswordLength, maxPasswordLength)
   password: string;
 
-  @ApiProperty({ example: 'Rostislav', description: 'Name of user' })
+  @ApiProperty({
+    example: 'Rostislav',
+    description: 'Name of user',
+    required: true,
+  })
   @IsString()
   @Length(minNameLength, maxNameLength)
   name: string;
 
-  @ApiProperty({ example: '2022-09-22', description: 'Date of birth' })
+  @ApiProperty({
+    example: '2022-09-22',
+    description: 'Date of birth',
+    required: false,
+  })
   dateOfBirth?: Date;
 
-  @ApiProperty({ example: 'File', description: 'Photo/avatar' })
+  @ApiProperty({
+    example: 'File',
+    description: 'Photo/avatar',
+    required: false,
+  })
   avatar?: string;
 
-  @ApiProperty({ example: 'USER', description: 'Role of account' })
+  @ApiProperty({
+    example: 'USER',
+    description: 'Role of account',
+    required: false,
+  })
   roles?: Roles[];
 
-  @ApiProperty({ example: 'true', description: 'Is user banned?' })
+  @ApiProperty({
+    example: 'true',
+    description: 'Is user banned?',
+    required: false,
+  })
   banned?: boolean;
 
-  @ApiProperty({ example: '0683730423', description: 'Phone number' })
+  @ApiProperty({
+    example: '0683730423',
+    description: 'Phone number',
+    required: true,
+  })
   @IsPhoneNumber('UA')
   phone: string;
 
-  @ApiProperty({ example: 'xxxxxxxxxxxxxxxx', description: 'Google Id' })
+  @ApiProperty({
+    example: 'xxxxxxxxxxxxxxxx',
+    description: 'Google Id',
+    required: false,
+  })
   googleId?: string;
 }
