@@ -1,3 +1,4 @@
+import { FileService } from './../file/file.service';
 import {
   CanActivate,
   ExecutionContext,
@@ -9,8 +10,6 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { TokenValidationDto } from 'src/auth/dto/token-validation.dto';
-import { RedisService } from './../redis/redis.service';
 import { PERMISSIONS_KEY } from './permission.decorator';
 
 @Injectable()
@@ -47,10 +46,10 @@ export class PermissionsGuard implements CanActivate {
       }
       const user = this.jwtService.verify(token);
       const folderPermissionsForUser =
-        await this.fileService.getFolderPermissionsForUser(user.id);
+        await this.fileService.getPermissionForUser(user.id);
 
-      const hasPermission = folderPermissionsForUser.some((permission) => {
-        return requiredPermissions.includes(permission);
+      const hasPermission = requiredPermissions.some((permission) => {
+        return folderPermissionsForUser === permission;
       });
 
       if (!hasPermission) {
