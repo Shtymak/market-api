@@ -13,6 +13,7 @@ import { MailModule } from './mail/mail.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { RedisModule } from './redis/redis.module';
+import { FileModule } from './file/file.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { RedisModule } from './redis/redis.module';
     }),
     TelegramModule,
     RedisModule,
+    FileModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],
