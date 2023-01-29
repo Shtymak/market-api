@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Document, SchemaTypes } from 'mongoose';
+import { File } from './file.model';
 export type FolderDocument = Folder & Document;
-
 @Schema()
 export class Folder {
   @ApiProperty({ example: 'uuod-fsdf-sdfsdxvc-sdf', description: 'Id of user' })
@@ -27,6 +27,15 @@ export class Folder {
   })
   @Prop({ type: SchemaTypes.ObjectId, required: false })
   parentFolderId: string;
+
+  @ApiProperty({ example: 'files', description: 'files in folder' })
+  @Prop({
+    type: [SchemaTypes.ObjectId],
+    required: true,
+    ref: 'File',
+    default: [],
+  })
+  files: File[];
 }
 
 export const FolderSchema = SchemaFactory.createForClass(Folder);

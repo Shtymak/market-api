@@ -24,6 +24,10 @@ export class File {
   @Prop({ required: true })
   name: string;
 
+  @ApiProperty({ example: 'Documents/fit', description: 'Name of folder' })
+  @Prop({ required: true })
+  path: string;
+
   @ApiProperty({
     example: 'uuod-fsdf-sdfsdxvc-sdf',
     description: 'Id of parent folder',

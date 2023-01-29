@@ -7,9 +7,10 @@ export class FileInfo {
 
 export enum FILE_TYPE {
   PDF = 'pdf',
+  UNKNOWN = 'unknown',
 }
 
 export enum FILE_ICON {
-  UNKNOW = 'unknow',
+  UNKNOWN = 'unknow',
   PDF = 'pdf',
 }
