@@ -11,10 +11,11 @@ export class FolderUser {
     example: 'uuod-fsdf-sdfsdxvc-sdf',
     description: 'Id of folder',
   })
+  @Prop({ type: Folder, ref: 'Folder', required: true })
   folder: Folder;
 
   @ApiProperty({ example: 'uuod-fsdf-sdfsdxvc-sdf', description: 'Id of user' })
-  @Prop({ type: SchemaTypes.ObjectId, auto: true })
+  @Prop({ type: SchemaTypes.ObjectId, auto: true, ref: 'User' })
   user: User;
 
   @ApiProperty({
