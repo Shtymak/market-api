@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -17,6 +19,7 @@ import CreateFolderDto from './dto/create-folder.dto';
 import UploadFileDto from './dto/upload-file.dto';
 import { FileService } from './file.service';
 import { Permissions } from './../roles/permission.decorator';
+import { Response } from 'express';
 @Controller('file')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
@@ -45,5 +48,17 @@ export class FileController {
       folderId,
     };
     return this.fileService.uploadFile(fileDto);
+  }
+
+  @Get('folder/:folderId')
+  // @UseGuards(PermissionsGuard)
+  // @Permissions(FOLDER_PERMISSIONS.OWNER)
+  public async getFiles(
+    @Param('folderId') folderId: string,
+    @Res() res: Response,
+  ) {
+    console.log('folderId', folderId);
+
+    res.send({});
   }
 }

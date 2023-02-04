@@ -14,6 +14,9 @@ import { UploadsModule } from './uploads/uploads.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { RedisModule } from './redis/redis.module';
 import { FileModule } from './file/file.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join, resolve } from 'path';
 
 @Module({
   imports: [
@@ -46,6 +49,21 @@ import { FileModule } from './file/file.module';
     TelegramModule,
     RedisModule,
     FileModule,
+    MulterModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        dest: configService.get<string>('multer.dest'),
+      }),
+      inject: [ConfigService],
+    }),
+    ServeStaticModule.forRootAsync({
+      useFactory: () => [
+        {
+          rootPath: join(__dirname, '..', '..', 'uploads'),
+          serveRoot: '/uploads',
+        },
+      ],
+    }),
   ],
   controllers: [AppController, UsersController],
   providers: [],
