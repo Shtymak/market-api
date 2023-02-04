@@ -1,5 +1,5 @@
-import { FullUserDto } from 'src/users/dto/full-user.dto';
-import { BaseEntity } from 'src/types/Base.entity';
+import { FullUserDto } from '../../users/dto/full-user.dto';
+import { BaseEntity } from '../../types/Base.entity';
 import { Roles } from '../../types/Roles.enum';
 import { ApiProperty } from '@nestjs/swagger';
 import {

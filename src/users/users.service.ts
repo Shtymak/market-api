@@ -1,4 +1,4 @@
-import { FullUserDto } from 'src/users/dto/full-user.dto';
+import { FullUserDto } from '../users/dto/full-user.dto';
 import { faker } from '@faker-js/faker';
 import {
   HttpException,
@@ -11,8 +11,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import * as path from 'path';
-import { Roles } from 'src/types/Roles.enum';
-import { CloudinaryUpload } from 'src/uploads/cloudnary.upload';
+import { Roles } from '../types/Roles.enum';
+import { CloudinaryUpload } from '../uploads/cloudnary.upload';
 import * as uuid from 'uuid';
 import { PaginationDto } from './../types/pagination.dto';
 import { TransformFileDto } from './../uploads/dto/transformFile.dto';
@@ -132,7 +132,7 @@ export class UsersService {
   async createRandomUsers(count: number): Promise<GetUserDto[]> {
     const users = [];
     for (let i = 0; i < count; i++) {
-      const hashedPassword = await bcrypt.hash(faker.internet.password(), 10);
+      const hashedPassword = await bcrypt.hash('password', 10);
       const user: CreateUserDto = {
         email: faker.internet.email(),
         password: hashedPassword,

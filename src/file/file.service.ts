@@ -8,6 +8,8 @@ import { Folder, FolderDocument } from './folder.model';
 import UploadFileDto from './dto/upload-file.dto';
 import { FileDocument, File } from './file.model';
 import { FILE_ICON, FILE_TYPE, FileInfo } from './file-info.type';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class FileService {
@@ -36,13 +38,31 @@ export class FileService {
     }
   }
 
-  public async createFolder(folderDto: CreateFolderDto): Promise<Folder> {
+  public async createFolder(
+    folderDto: CreateFolderDto,
+    ownerId: string,
+  ): Promise<Folder> {
     try {
-      const { name, parentFolderId } = folderDto;
+      const { name, parentFolderId, role } = folderDto;
       if (!parentFolderId) {
         const folder = await this.folderModel.create({
           name,
         });
+        const staticFolderPath = path.join(
+          __dirname,
+          '..',
+          '..',
+          '..',
+          'uploads',
+        );
+        fs.mkdirSync(`${staticFolderPath}/${folder._id}`);
+
+        await this.folderUserModel.create({
+          user: ownerId,
+          role: role,
+          folder: folder,
+        });
+
         return folder;
       }
 
@@ -57,6 +77,10 @@ export class FileService {
         name,
         parentFolderId,
       });
+
+      const staticFolderPath = path.join(__dirname, '..', '..', 'uploads');
+      fs.mkdirSync(` ${staticFolderPath}/${folder._id}`);
+
       return folder;
     } catch (e) {
       this.logger.error(e);

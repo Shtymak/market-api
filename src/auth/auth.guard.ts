@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from '../redis/redis.service';
 import { TokenValidationDto } from './dto/token-validation.dto';
 const ERROR_MESSAGE = 'User is not authorized';
 @Injectable()

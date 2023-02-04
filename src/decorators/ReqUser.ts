@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { RequestWithUser } from 'src/types/user-request';
+import { RequestWithUser } from '../types/user-request';
 
 // Changed main.ts global validation pipe's
 // validateCustomDecorators: false,
