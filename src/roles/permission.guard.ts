@@ -44,9 +44,15 @@ export class PermissionsGuard implements CanActivate {
           message: 'User is not authorized',
         });
       }
+      const folderId = request.params.folderId;
+      if (!folderId) {
+        throw new ForbiddenException({
+          message: 'Folder id is not provided',
+        });
+      }
       const user = this.jwtService.verify(token);
       const folderPermissionsForUser =
-        await this.fileService.getPermissionForUser(user.id);
+        await this.fileService.getPermissionForUser(user.id, folderId);
 
       const hasPermission = requiredPermissions.some((permission) => {
         return folderPermissionsForUser === permission;

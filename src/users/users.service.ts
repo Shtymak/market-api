@@ -78,7 +78,7 @@ export class UsersService {
 
   async findOne(id: string): Promise<GetUserDto> {
     try {
-      const user = await this.userModel.findById(id);
+      const user = await this.userModel.findOne({ id: id });
       this.logger.debug(`User found: `, user);
       return new GetUserDto(user);
     } catch (e: any) {

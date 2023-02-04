@@ -1,3 +1,4 @@
+import { UsersService } from './../users/users.service';
 import { FolderUser, FolderUserDocument } from './folder.user.model';
 import { FOLDER_PERMISSIONS } from './../roles/permission.enum';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
@@ -5,6 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import CreateFolderDto from './dto/create-folder.dto';
 import { Folder, FolderDocument } from './folder.model';
+import { Document, SchemaTypes } from 'mongoose';
 import UploadFileDto from './dto/upload-file.dto';
 import { FileDocument, File } from './file.model';
 import { FILE_ICON, FILE_TYPE, FileInfo } from './file-info.type';
@@ -20,11 +22,19 @@ export class FileService {
     private readonly folderModel: Model<FolderDocument>,
     @InjectModel(File.name)
     private readonly fileModel: Model<FileDocument>,
+    private readonly userSrvice: UsersService,
   ) {}
   private logger = new Logger(FileService.name);
-  public async getPermissionForUser(id: string): Promise<string> {
+  public async getPermissionForUser(
+    id: string,
+    folderId: string,
+  ): Promise<string> {
     try {
-      const folderUser = await this.folderUserModel.findOne({ user: id });
+      const folderUser = await this.folderUserModel.findOne({
+        user: id,
+        folder: folderId,
+      });
+
       if (!folderUser) {
         return FOLDER_PERMISSIONS.GUEST;
       }
@@ -60,7 +70,7 @@ export class FileService {
         await this.folderUserModel.create({
           user: ownerId,
           role: role,
-          folder: folder,
+          folder: folder.id,
         });
 
         return folder;
@@ -78,7 +88,19 @@ export class FileService {
         parentFolderId,
       });
 
-      const staticFolderPath = path.join(__dirname, '..', '..', 'uploads');
+      await this.folderUserModel.create({
+        user: ownerId,
+        role: role,
+        folder: folder.id,
+      });
+
+      const staticFolderPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'uploads',
+      );
       fs.mkdirSync(` ${staticFolderPath}/${folder._id}`);
 
       return folder;
@@ -109,8 +131,11 @@ export class FileService {
 
   public async uploadFile(uploadFile: UploadFileDto): Promise<File> {
     try {
-      const { folderId, file, name } = uploadFile;
-      const folder = await this.folderModel.findById(folderId);
+      const { folderId, file } = uploadFile;
+      const folder = await this.folderModel.findOne({
+        id: folderId,
+      });
+
       if (!folder) {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
@@ -123,13 +148,34 @@ export class FileService {
         type: fileType,
         icon: fileIcon,
       };
+      const staticFolderPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'uploads',
+        folder._id.toString(),
+      );
       const newFile = await this.fileModel.create({
-        name,
+        name: file.originalname,
         info: fileInfo,
-        folder: folderId,
+        folder: folder,
         createdBy: uploadFile.creatorId,
-        path: file.path,
+        path: `${staticFolderPath}`,
       });
+
+      await this.folderModel.updateOne(
+        { _id: folder._id },
+        { $push: { files: newFile } },
+      );
+
+      fs.writeFileSync(
+        `${staticFolderPath}/${newFile.id}.${file.mimetype.split('/')[1]}`,
+        file.buffer,
+        {
+          flag: 'a+',
+        },
+      );
 
       return newFile;
     } catch (e) {

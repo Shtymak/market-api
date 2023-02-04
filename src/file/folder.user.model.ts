@@ -11,8 +11,8 @@ export class FolderUser {
     example: 'uuod-fsdf-sdfsdxvc-sdf',
     description: 'Id of folder',
   })
-  @Prop({ type: Folder, ref: 'Folder', required: true })
-  folder: Folder;
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'Folder', required: true })
+  folder: string;
 
   @ApiProperty({ example: 'uuod-fsdf-sdfsdxvc-sdf', description: 'Id of user' })
   @Prop({ type: SchemaTypes.ObjectId, auto: true, ref: 'User' })
@@ -22,6 +22,7 @@ export class FolderUser {
     example: 'owner',
     description: 'Role of user for this folder',
   })
+  @Prop({ required: true })
   role: string;
 }
 

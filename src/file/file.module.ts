@@ -1,3 +1,4 @@
+import { UsersModule } from './../users/users.module';
 import { ConfigService } from '@nestjs/config';
 import { RedisModule } from './../redis/redis.module';
 import { FolderUser, FolderUserSchema } from './folder.user.model';
@@ -34,6 +35,7 @@ import { JwtModule } from '@nestjs/jwt';
       }),
     }),
     RedisModule,
+    UsersModule,
   ],
 })
 export class FileModule {}
