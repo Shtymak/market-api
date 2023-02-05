@@ -51,14 +51,13 @@ export class FileController {
   }
 
   @Get('folder/:folderId')
-  // @UseGuards(PermissionsGuard)
-  // @Permissions(FOLDER_PERMISSIONS.OWNER)
-  public async getFiles(
-    @Param('folderId') folderId: string,
-    @Res() res: Response,
-  ) {
-    console.log('folderId', folderId);
-
-    res.send({});
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  public async getFolder(@Param('folderId') folderId: string) {
+    return this.fileService.getFolderById(folderId);
   }
 }
