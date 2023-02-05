@@ -1,6 +1,6 @@
 import { Injectable, Logger, PipeTransform } from '@nestjs/common';
 import * as sharp from 'sharp';
-import { TransformFileDto } from 'src/uploads/dto/transformFile.dto';
+import { TransformFileDto } from '../src/uploads/dto/transformFile.dto';
 
 export const AVATAR_MAX_SIZE = 500;
 export const AVATAR_QUALITY = 100;

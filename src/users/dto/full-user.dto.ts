@@ -1,4 +1,4 @@
-import { BaseEntity } from 'src/types/Base.entity';
+import { BaseEntity } from '../../types/Base.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -9,7 +9,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
-import { Roles } from 'src/types/Roles.enum';
+import { Roles } from '../../types/Roles.enum';
 import { User } from '../user.model';
 const minPasswordLength = 8;
 const maxPasswordLength = 32;

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { TokenValidationDto } from 'src/auth/dto/token-validation.dto';
+import { TokenValidationDto } from '../auth/dto/token-validation.dto';
 import { RedisService } from './../redis/redis.service';
 import { ROLES_KEY } from './roles.decorator';
 

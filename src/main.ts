@@ -12,7 +12,7 @@ async function bootstrap() {
 
   const PORT = configService.get<number>('port');
   const BASE_URL = `${configService.get<string>('baseUrl')}:${PORT}`;
-  app.useGlobalPipes(new ValidationPipe());
+  // app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
     .setTitle('NestJS API')
     .setDescription('API Documentation')

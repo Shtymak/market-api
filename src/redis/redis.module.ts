@@ -10,9 +10,9 @@ import { RedisService } from './redis.service';
       useFactory: async (configService: ConfigService) => {
         return {
           store: redisStore,
-          url: configService.get<string>('redis.url'),
+          // url: configService.get<string>('redis.url'),
           ttl: configService.get<number>('redis.ttl'),
-          // connectionString: configService.get<string>('redis.connectionString'),
+          connectionString: configService.get<string>('redis.connectionString'),
         };
       },
       inject: [ConfigService],

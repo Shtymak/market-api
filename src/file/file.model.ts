@@ -32,12 +32,12 @@ export class File {
     example: 'uuod-fsdf-sdfsdxvc-sdf',
     description: 'Id of parent folder',
   })
-  @Prop({ type: Folder, required: true, ref: 'Folder' })
+  @Prop({ type: SchemaTypes.ObjectId, required: true, ref: 'Folder' })
   folder: Folder;
 
   @ApiProperty({ example: 'eax-eer-erte-cdscs', description: 'Ref for user' })
-  @Prop({ type: User, required: true, ref: 'User' })
-  createdBy: User;
+  @Prop({ type: String, required: true, unique: false })
+  createdBy: string;
 
   @ApiProperty({
     example: { type: '.jpg', icon: 'default' },
