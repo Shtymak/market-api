@@ -88,4 +88,15 @@ export class FileController {
 
     return res.redirect(`${host}/${file}`);
   }
+
+  @Get('folder/entries/:folderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  public async getFolderEntries(@Param('folderId') folderId: string) {
+    return this.fileService.getFilesListByFolderId(folderId);
+  }
 }

@@ -79,7 +79,7 @@ export class FileService {
       }
 
       const parentFolder = await this.folderModel.findOne({
-        id: parentFolderId,
+        $or: [{ _id: parentFolderId }, { id: parentFolderId }],
       });
       if (!parentFolder) {
         throw new HttpException(
@@ -228,6 +228,42 @@ export class FileService {
       this.logger.error(e);
       throw new HttpException(
         'Error getting file',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async getFilesListByFolderId(id: string) {
+    try {
+      const candidateFolder = await this.folderModel.findOne({
+        $or: [{ _id: id }, { id }],
+      });
+      if (!candidateFolder) {
+        throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+      }
+      const childrenFolders = await this.folderModel.find({
+        $or: [
+          { parentFolderId: candidateFolder.id },
+          { parentFolderId: candidateFolder._id },
+        ],
+      });
+      const childrenFiles = await this.fileModel.find({
+        folder: id,
+      });
+
+      const users = await this.folderUserModel.find({
+        $or: [{ folder: candidateFolder.id }, { folder: candidateFolder._id }],
+      });
+
+      return {
+        folders: childrenFolders,
+        files: childrenFiles,
+        users,
+      };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error getting files list',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
