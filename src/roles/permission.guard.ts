@@ -1,6 +1,8 @@
+import { FileService } from './../file/file.service';
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   HttpException,
   Injectable,
   Logger,
@@ -8,26 +10,24 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { TokenValidationDto } from '../auth/dto/token-validation.dto';
-import { RedisService } from './../redis/redis.service';
-import { ROLES_KEY } from './roles.decorator';
+import { PERMISSIONS_KEY } from './permission.decorator';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class PermissionsGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private jwtService: JwtService,
-    private redisService: RedisService,
+    private fileService: FileService,
   ) {}
-  private logger = new Logger(RolesGuard.name);
+  private logger = new Logger(PermissionsGuard.name);
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const requiredRoles = this.reflector.getAllAndOverride<string[]>(
-        ROLES_KEY,
+      const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+        PERMISSIONS_KEY,
         [context.getHandler(), context.getClass()],
       );
-      if (!requiredRoles) {
+      if (!requiredPermissions) {
         return true;
       }
       const request = context.switchToHttp().getRequest();
@@ -44,28 +44,30 @@ export class RolesGuard implements CanActivate {
           message: 'User is not authorized',
         });
       }
-      const user = this.jwtService.verify(token);
-      const validationData = await this.redisService.get(user.id);
-      if (!validationData) {
-        throw new UnauthorizedException({
-          message: 'User is not authorized',
+      const folderId = request.params.folderId;
+      if (!folderId) {
+        throw new ForbiddenException({
+          message: 'Folder id is not provided',
         });
       }
-      const { tokens }: TokenValidationDto = JSON.parse(validationData);
-      const thisToken = tokens.find((t) => t.token === token);
+      const user = this.jwtService.verify(token);
+      const folderPermissionsForUser =
+        await this.fileService.getPermissionForUser(user.id, folderId);
 
-      if (!thisToken || !thisToken.isValid) {
-        throw new UnauthorizedException({
-          message: 'User is not authorized',
+      const hasPermission = requiredPermissions.some((permission) => {
+        return folderPermissionsForUser === permission;
+      });
+
+      if (!hasPermission) {
+        throw new ForbiddenException({
+          message:
+            'User does not have permission to do this action for this folder',
         });
       }
       request.user = user;
-      const permission = user.roles.some((role) =>
-        requiredRoles.includes(role),
-      );
-      return permission;
+      return true;
     } catch (error) {
-      this.logger.error(`RolesGuard error: ${error.message}`);
+      this.logger.error(`Permission Guard error: ${error.message}`);
       throw new HttpException(error.message, error.status);
     }
   }

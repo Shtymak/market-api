@@ -1,4 +1,4 @@
-import { FullUserDto } from 'src/users/dto/full-user.dto';
+import { FullUserDto } from '../users/dto/full-user.dto';
 import { faker } from '@faker-js/faker';
 import {
   HttpException,
@@ -11,8 +11,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import * as path from 'path';
-import { Roles } from 'src/types/Roles.enum';
-import { CloudinaryUpload } from 'src/uploads/cloudnary.upload';
+import { Roles } from '../types/Roles.enum';
+import { CloudinaryUpload } from '../uploads/cloudnary.upload';
 import * as uuid from 'uuid';
 import { PaginationDto } from './../types/pagination.dto';
 import { TransformFileDto } from './../uploads/dto/transformFile.dto';
@@ -33,6 +33,25 @@ export class UsersService {
   }
   async create(createUserDto: CreateUserDto): Promise<GetUserDto> {
     try {
+      const alredyExist = await this.userModel.findOne({
+        $or: [
+          { email: createUserDto.email },
+          { name: createUserDto.name },
+          { phone: createUserDto.phone },
+        ],
+      });
+      if (alredyExist) {
+        const duplicate =
+          alredyExist.email === createUserDto.email
+            ? 'email'
+            : alredyExist.name === createUserDto.name
+            ? 'name'
+            : 'phone';
+        throw new HttpException(
+          `User with this ${duplicate} already exist`,
+          HttpStatus.BAD_REQUEST,
+        );
+      }
       const password = await bcrypt.hash(createUserDto.password, 10);
       const createdUser = await this.userModel.create({
         ...createUserDto,
@@ -42,7 +61,7 @@ export class UsersService {
       return new GetUserDto(createdUser);
     } catch (e: any) {
       this.logger.error(e.message);
-      throw e;
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -59,7 +78,7 @@ export class UsersService {
 
   async findOne(id: string): Promise<GetUserDto> {
     try {
-      const user = await this.userModel.findById(id);
+      const user = await this.userModel.findOne({ id: id });
       this.logger.debug(`User found: `, user);
       return new GetUserDto(user);
     } catch (e: any) {
@@ -113,8 +132,8 @@ export class UsersService {
   async createRandomUsers(count: number): Promise<GetUserDto[]> {
     const users = [];
     for (let i = 0; i < count; i++) {
-      const hashedPassword = await bcrypt.hash(faker.internet.password(), 10);
-      const user: User = {
+      const hashedPassword = await bcrypt.hash('password', 10);
+      const user: CreateUserDto = {
         email: faker.internet.email(),
         password: hashedPassword,
         name: faker.name.firstName(),

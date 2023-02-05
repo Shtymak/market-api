@@ -9,10 +9,10 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateMailDto } from 'src/mail/dto/create-mail.dto';
-import { MailService } from 'src/mail/mail.service';
-import { RedisService } from 'src/redis/redis.service';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateMailDto } from '../mail/dto/create-mail.dto';
+import { MailService } from '../mail/mail.service';
+import { RedisService } from '../redis/redis.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import * as uuid from 'uuid';
 import { GetUserDto } from './../users/dto/get-user.dto';
 import { UsersService } from './../users/users.service';
@@ -86,16 +86,20 @@ export class AuthService {
         throw new HttpException('Invalid password', HttpStatus.BAD_REQUEST);
       }
       const accessToken = this.generateToken(new GetUserDto(user));
-      const userTokens = await this.redisService.get(user.id);
+      const userTokens = await this.redisService.get(user.id.toString());
       let tokens = [];
       if (userTokens) {
-        tokens = JSON.parse(userTokens);
+        tokens = JSON.parse(userTokens).tokens;
       }
+      this.logger.debug(`Tokens: ${JSON.stringify(tokens)}`);
       tokens.push({
         token: accessToken,
         isValid: true,
       });
-      await this.redisService.set(user.id, JSON.stringify({ tokens }));
+      await this.redisService.set(
+        user.id.toString(),
+        JSON.stringify({ tokens }),
+      );
       return {
         token: accessToken,
         user: new GetUserDto(user),
@@ -147,7 +151,7 @@ export class AuthService {
       const userTokens = await this.redisService.get(candidate.id);
       let tokens = [];
       if (userTokens) {
-        tokens = JSON.parse(userTokens);
+        tokens = JSON.parse(userTokens).tokens;
       }
       tokens.push({
         token: accessToken,

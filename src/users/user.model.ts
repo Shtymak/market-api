@@ -1,11 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, SchemaTypes } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Roles } from '../types/Roles.enum';
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
+  @ApiProperty({ example: 'uuod-fsdf-sdfsdxvc-sdf', description: 'Id of user' })
+  @Prop({ type: SchemaTypes.ObjectId, auto: true })
+  id: string;
+
   @ApiProperty({ example: 'user@gmail.com', description: 'Mail of user' })
   @Prop({ unique: true, required: true })
   email: string;
@@ -44,6 +48,14 @@ export class User {
   @ApiProperty({ example: 'xxxxxxxxxxxxxxxx', description: 'Google Id' })
   @Prop({ required: false, default: '' })
   googleId: string;
+
+  @ApiProperty({ example: '2021-09-22', description: 'Date of creation' })
+  @Prop({ default: new Date() })
+  createdAt: Date;
+
+  @ApiProperty({ example: '2021-09-22', description: 'Date of update' })
+  @Prop({ default: new Date() })
+  updatedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

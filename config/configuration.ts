@@ -41,4 +41,7 @@ export const config = () => ({
     password: process.env.REDIS_PASSWORD,
     connectionString: process.env.REDIS_URL,
   },
+  multer: {
+    dest: process.env.MULTER_DEST || 'uploads',
+  },
 });
