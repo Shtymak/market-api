@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -17,9 +18,13 @@ import { PermissionsGuard } from './../roles/permission.guard';
 import CreateFolderDto from './dto/create-folder.dto';
 import UploadFileDto from './dto/upload-file.dto';
 import { FileService } from './file.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 @Controller('file')
 export class FileController {
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly fileService: FileService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('create/folder')
   @UseGuards(JwtAuthGuard)
@@ -67,5 +72,20 @@ export class FileController {
   )
   public async getFolderFiles(@Param('folderId') folderId: string) {
     return this.fileService.getFilesByFolderId(folderId);
+  }
+
+  @Get('folder/files/:fileId/:folderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  public async getFile(@Param('fileId') fileId: string, @Res() res: any) {
+    const file = await this.fileService.getFileById(fileId);
+    const host = await this.configService.get('hostUrl');
+    console.log(`${host}/${file}`);
+
+    return res.redirect(`${host}/${file}`);
   }
 }

@@ -29,9 +29,12 @@ export class FileService {
     folderId: string,
   ): Promise<string> {
     try {
+      const folder = await this.folderModel.findOne({
+        $or: [{ _id: folderId }, { id: folderId }],
+      });
       const folderUser = await this.folderUserModel.findOne({
         user: id,
-        folder: folderId,
+        folder: folder.id,
       });
 
       if (!folderUser) {
@@ -203,6 +206,28 @@ export class FileService {
       this.logger.error(e);
       throw new HttpException(
         'Error uploading file',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async getFileById(id: string) {
+    try {
+      const file = await this.fileModel.findOne({ $or: [{ id }, { _id: id }] });
+      const { path: filePath, name, info } = file;
+
+      const staticPathRegex = /.*\/uploads\/(.*)/;
+      const staticPath = path.join(
+        'uploads',
+        staticPathRegex.exec(filePath)[1],
+        `${file.id.toString()}.${info.type}`,
+      );
+
+      return staticPath;
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error getting file',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
