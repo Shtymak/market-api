@@ -5,7 +5,6 @@ import {
   Param,
   Post,
   Req,
-  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -13,18 +12,16 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FOLDER_PERMISSIONS } from 'src/roles/permission.enum';
 import { JwtAuthGuard } from '../auth/auth.guard';
+import { Permissions } from './../roles/permission.decorator';
 import { PermissionsGuard } from './../roles/permission.guard';
-import { TransformFileDto } from './../uploads/dto/transformFile.dto';
 import CreateFolderDto from './dto/create-folder.dto';
 import UploadFileDto from './dto/upload-file.dto';
 import { FileService } from './file.service';
-import { Permissions } from './../roles/permission.decorator';
-import { Response } from 'express';
 @Controller('file')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @Post('folder/create')
+  @Post('create/folder')
   @UseGuards(JwtAuthGuard)
   public async createFolder(@Req() req: any, @Body() body: CreateFolderDto) {
     console.log('req.user', req.user);
@@ -50,7 +47,7 @@ export class FileController {
     return this.fileService.uploadFile(fileDto);
   }
 
-  @Get('folder/:folderId')
+  @Get('folder/get/:folderId')
   @UseGuards(PermissionsGuard)
   @Permissions(
     FOLDER_PERMISSIONS.OWNER,
@@ -59,5 +56,16 @@ export class FileController {
   )
   public async getFolder(@Param('folderId') folderId: string) {
     return this.fileService.getFolderById(folderId);
+  }
+
+  @Get('folder/:folderId/files')
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  public async getFolderFiles(@Param('folderId') folderId: string) {
+    return this.fileService.getFilesByFolderId(folderId);
   }
 }

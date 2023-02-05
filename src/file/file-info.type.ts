@@ -6,7 +6,18 @@ export class FileInfo {
 }
 
 export enum FILE_TYPE {
+  JPEG = 'jpeg',
+  JPG = 'jpg',
+  PNG = 'png',
   PDF = 'pdf',
+  DOC = 'doc',
+  DOCX = 'docx',
+  XLS = 'xls',
+  XLSX = 'xlsx',
+  PPT = 'ppt',
+  PPTX = 'pptx',
+  TXT = 'txt',
+  SVG = 'svg',
   UNKNOWN = 'unknown',
 }
 
