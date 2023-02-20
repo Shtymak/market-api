@@ -82,7 +82,7 @@ export class FileController {
     FOLDER_PERMISSIONS.USER,
   )
   public async getFile(@Param('fileId') fileId: string, @Res() res: any) {
-    const file = await this.fileService.getFileById(fileId);
+    const file = await this.fileService.getFilePathById(fileId);
     const host = await this.configService.get('hostUrl');
     console.log(`${host}/${file}`);
 

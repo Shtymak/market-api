@@ -36,6 +36,15 @@ import { ThankYouPage } from './thank.you.page';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Get('/check')
+  @UseGuards(JwtAuthGuard)
+  async check(@Req() request: any) {
+    if (request.user) {
+      return request.user;
+    }
+    return false;
+  }
+
   @ApiOperation({ summary: 'Login with magic code' })
   @ApiBody({ type: MagicLinkDto })
   @ApiResponse({ status: HttpStatus.OK, type: GetAuthDto })

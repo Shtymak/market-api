@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
-import { Model, Types, Document, Query } from 'mongoose';
+import mongoose, { Model, Types, Document, Query } from 'mongoose';
 import * as path from 'path';
 import { FOLDER_PERMISSIONS } from './../roles/permission.enum';
 import { UsersService } from './../users/users.service';
@@ -11,6 +11,7 @@ import { FILE_ICON, FILE_TYPE, FileInfo } from './file-info.type';
 import { File, FileDocument } from './file.model';
 import { Folder, FolderDocument } from './folder.model';
 import { FolderUser, FolderUserDocument } from './folder.user.model';
+import FolderEntriesDto from './dto/folder-entries.dto';
 
 @Injectable()
 export class FileService {
@@ -25,7 +26,7 @@ export class FileService {
   ) {}
   private logger = new Logger(FileService.name);
   public async getPermissionForUser(
-    id: string,
+    userId: string,
     folderId: string,
   ): Promise<string> {
     try {
@@ -33,7 +34,7 @@ export class FileService {
         $or: [{ _id: folderId }, { id: folderId }],
       });
       const folderUser = await this.folderUserModel.findOne({
-        user: id,
+        user: userId,
         folder: folder.id,
       });
 
@@ -63,52 +64,45 @@ export class FileService {
         '..',
         'uploads',
       );
-      if (!parentFolderId) {
-        const folder = await this.folderModel.create({
-          name,
-        });
-        fs.mkdirSync(`${staticFolderPath}/${folder._id}`);
 
-        await this.folderUserModel.create({
-          user: ownerId,
-          role: role,
-          folder: folder.id,
+      // Перевіряємо, чи існує батьківська тека з заданим ідентифікатором
+      let parentFolder;
+      if (parentFolderId) {
+        parentFolder = await this.folderModel.findOne({
+          $or: [{ _id: parentFolderId }, { id: parentFolderId }],
         });
-
-        return folder;
+        if (!parentFolder) {
+          throw new HttpException(
+            'Parent folder not found',
+            HttpStatus.NOT_FOUND,
+          );
+        }
       }
 
-      const parentFolder = await this.folderModel.findOne({
-        $or: [{ _id: parentFolderId }, { id: parentFolderId }],
-      });
-      if (!parentFolder) {
-        throw new HttpException(
-          'Parent folder not found',
-          HttpStatus.NOT_FOUND,
-        );
-      }
+      // Створюємо нову теку в базі даних
       const folder = await this.folderModel.create({
         name,
         parentFolderId,
       });
 
-      const logicPath = await this.getPathWithParentFolder(parentFolder);
-
-      const folderPath = path.join(
-        __dirname,
-        '..',
-        '..',
-        '..',
-        'uploads',
-        logicPath,
-      );
-
+      // Додаємо права доступу користувача до теки
       await this.folderUserModel.create({
         user: ownerId,
-        role: role,
+        role,
         folder: folder.id,
       });
-      fs.mkdirSync(`${folderPath}/${folder._id}`);
+
+      // Створюємо шлях до нової теки
+      let folderPath = staticFolderPath;
+      if (parentFolder) {
+        const logicPath = await this.getPathWithParentFolder(parentFolder);
+        folderPath = path.join(folderPath, logicPath);
+      }
+      folderPath = path.join(folderPath, folder._id.toString());
+
+      // Створюємо нову теку в файловій системі
+      await fs.promises.mkdir(folderPath, { recursive: true });
+
       return folder;
     } catch (e) {
       this.logger.error(e);
@@ -119,9 +113,11 @@ export class FileService {
     }
   }
 
-  public async getFolderById(id: string) {
+  public async getFolderById(id: string): Promise<Folder> {
     try {
-      const folder = await this.folderModel.findOne({ id });
+      const folder = await this.folderModel.findOne({
+        $or: [{ _id: id }, { id: id }],
+      });
       if (!folder) {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
@@ -135,7 +131,7 @@ export class FileService {
     }
   }
 
-  public async getFilesByFolderId(id: string) {
+  public async getFilesByFolderId(id: string): Promise<File[]> {
     try {
       const { files } = await this.getFolderById(id);
       const filesInfo = await this.fileModel.find({ _id: { $in: files } });
@@ -150,15 +146,25 @@ export class FileService {
   }
 
   public async uploadFile(uploadFile: UploadFileDto): Promise<File> {
+    const { folderId, file, creatorId } = uploadFile;
+    const MAX_FILE_SIZE = 1024 * 1024 * 10; // 10MB
+
+    // валідація вхідних параметрів
+    if (!folderId || !file || file.size > MAX_FILE_SIZE) {
+      throw new HttpException('Invalid file or folder', HttpStatus.BAD_REQUEST);
+    }
+
     try {
-      const { folderId, file } = uploadFile;
+      // знайти папку
       const folder = await this.folderModel.findOne({
-        id: folderId,
+        $or: [{ _id: folderId }, { id: folderId }],
       });
 
       if (!folder) {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
+
+      // отримати інформацію про файл
       const fileType =
         FILE_TYPE[file.mimetype.split('/')[1].toUpperCase()] ||
         FILE_TYPE.UNKNOWN;
@@ -170,8 +176,8 @@ export class FileService {
         icon: fileIcon,
       };
 
+      // отримати шлях до папки
       const logicPath = await this.getPathWithParentFolder(folder);
-
       const staticFolderPath = path.join(
         __dirname,
         '..',
@@ -180,27 +186,38 @@ export class FileService {
         'uploads',
         logicPath,
       );
+
+      // зберегти файл
+      const fileId = new mongoose.Types.ObjectId();
+      const fileExtension = file.mimetype.split('/')[1];
+      // доповнюємо шлях до файлу інформацією про розширення файлу
+      const filePath = `${staticFolderPath}/${fileId}.${fileExtension}`;
+
+      // створюємо новий файл
       const newFile = await this.fileModel.create({
         name: file.originalname,
         info: fileInfo,
         folder: folder,
-        createdBy: uploadFile.creatorId,
-        path: `${staticFolderPath}`,
+        createdBy: creatorId,
+        path: filePath,
       });
 
-      await this.folderModel.updateOne(
-        { _id: folder._id },
-        { $push: { files: newFile } },
-      );
+      // додаємо створений файл до списку файлів в папці
+      folder.files.push(newFile);
+      await folder.save();
 
-      fs.writeFileSync(
-        `${staticFolderPath}/${newFile.id}.${file.mimetype.split('/')[1]}`,
-        file.buffer,
-        {
-          flag: 'a+',
-        },
-      );
+      // зберігаємо файл на сервер
+      await new Promise<void>((resolve, reject) => {
+        fs.writeFile(filePath, file.buffer, (error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
 
+      // повертаємо створений файл
       return newFile;
     } catch (e) {
       this.logger.error(e);
@@ -211,7 +228,7 @@ export class FileService {
     }
   }
 
-  public async getFileById(id: string) {
+  public async getFilePathById(id: string): Promise<string> {
     try {
       const file = await this.fileModel.findOne({ $or: [{ id }, { _id: id }] });
       const { path: filePath, name, info } = file;
@@ -233,7 +250,7 @@ export class FileService {
     }
   }
 
-  public async getFilesListByFolderId(id: string) {
+  public async getFilesListByFolderId(id: string): Promise<FolderEntriesDto> {
     try {
       const candidateFolder = await this.folderModel.findOne({
         $or: [{ _id: id }, { id }],
@@ -269,15 +286,26 @@ export class FileService {
     }
   }
 
-  private async getPathWithParentFolder(folder: Folder | any) {
-    if (!folder.parentFolderId) {
-      return folder._id.toString();
+  private async getPathWithParentFolder(folder: Folder | any): Promise<string> {
+    const pathParts: string[] = [];
+    let currentFolder = folder;
+    while (currentFolder.parentFolderId) {
+      const parentFolder = await this.folderModel.findOne({
+        $or: [
+          { _id: currentFolder.parentFolderId },
+          { id: currentFolder.parentFolderId },
+        ],
+      });
+      if (!parentFolder) {
+        throw new HttpException(
+          'Parent folder not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      pathParts.push(currentFolder._id.toString());
+      currentFolder = parentFolder;
     }
-    const parentFolder = await this.folderModel.findOne({
-      id: folder.parentFolderId,
-    });
-    return `${await this.getPathWithParentFolder(
-      parentFolder,
-    )}/${folder._id.toString()}`;
+    pathParts.push(currentFolder._id.toString());
+    return pathParts.reverse().join('/');
   }
 }
