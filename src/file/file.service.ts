@@ -31,8 +31,27 @@ export class FileService {
   ): Promise<string> {
     try {
       const folder = await this.folderModel.findOne({
-        $or: [{ _id: folderId }, { id: folderId }],
+        $or: [
+          { _id: new Types.ObjectId(folderId) },
+          { id: new Types.ObjectId(folderId) },
+        ],
       });
+
+      console.log('folder', {
+        id: new Types.ObjectId(folderId),
+        folderId,
+        folder,
+      });
+
+      if (!folder) {
+        throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+      }
+
+      console.log('folder.id === userId', folder.id.toString() === userId);
+
+      if (folder.id.toString() === userId) {
+        return FOLDER_PERMISSIONS.OWNER;
+      }
       const folderUser = await this.folderUserModel.findOne({
         user: userId,
         folder: folder.id,
@@ -41,6 +60,7 @@ export class FileService {
       if (!folderUser) {
         return FOLDER_PERMISSIONS.GUEST;
       }
+
       return folderUser.role;
     } catch (e) {
       this.logger.error(e);
@@ -77,12 +97,24 @@ export class FileService {
             HttpStatus.NOT_FOUND,
           );
         }
+      } else {
+        // якщо parentFolderId не задано, перевіряємо чи існує коренева тека з ідентифікатором ownerId
+        parentFolder = await this.folderModel.findOne({
+          $or: [{ _id: ownerId }, { id: ownerId }],
+        });
+        if (!parentFolder) {
+          // якщо кореневої теки немає, створюємо її
+          parentFolder = await this.folderModel.create({
+            name: 'root',
+            id: ownerId,
+          });
+        }
       }
 
       // Створюємо нову теку в базі даних
       const folder = await this.folderModel.create({
         name,
-        parentFolderId,
+        parentFolderId: parentFolder.id,
       });
 
       // Додаємо права доступу користувача до теки
@@ -145,6 +177,11 @@ export class FileService {
     }
   }
 
+  // public async getUserDefaultfalders(userId: string): Promise<Folder[]> {
+  //   try {
+  //     const user = await this.userSrvice.findOne(userId);
+  //     const folders = await this.folderUserModel.find({
+
   public async uploadFile(uploadFile: UploadFileDto): Promise<File> {
     const { folderId, file, creatorId } = uploadFile;
     const MAX_FILE_SIZE = 1024 * 1024 * 10; // 10MB
@@ -163,8 +200,9 @@ export class FileService {
       if (!folder) {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
-
       // отримати інформацію про файл
+      console.log(file.mimetype);
+
       const fileType =
         FILE_TYPE[file.mimetype.split('/')[1].toUpperCase()] ||
         FILE_TYPE.UNKNOWN;
@@ -177,7 +215,10 @@ export class FileService {
       };
 
       // отримати шлях до папки
+
       const logicPath = await this.getPathWithParentFolder(folder);
+      console.log(logicPath);
+
       const staticFolderPath = path.join(
         __dirname,
         '..',

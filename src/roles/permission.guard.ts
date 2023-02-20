@@ -51,6 +51,7 @@ export class PermissionsGuard implements CanActivate {
         });
       }
       const user = this.jwtService.verify(token);
+
       const folderPermissionsForUser =
         await this.fileService.getPermissionForUser(user.id, folderId);
 
@@ -67,7 +68,7 @@ export class PermissionsGuard implements CanActivate {
       request.user = user;
       return true;
     } catch (error) {
-      this.logger.error(`Permission Guard error: ${error.message}`);
+      this.logger.error(`Permission Guard error: ${error}`);
       throw new HttpException(error.message, error.status);
     }
   }
