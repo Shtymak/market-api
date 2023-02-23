@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -87,6 +88,20 @@ export class FileController {
     console.log(`${host}/${file}`);
 
     return res.redirect(`${host}/${file}`);
+  }
+
+  @Delete('folder/:folderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(FOLDER_PERMISSIONS.OWNER)
+  public async deleteFolder(@Param('folderId') folderId: string) {
+    return this.fileService.deleteFolder(folderId);
+  }
+
+  @Delete('folder/files/:fileId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(FOLDER_PERMISSIONS.OWNER)
+  public async deleteFile(@Param('fileId') fileId: string) {
+    return this.fileService.deleteFile(fileId);
   }
 
   @Get('folder/entries/:folderId')
