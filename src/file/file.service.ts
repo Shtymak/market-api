@@ -47,8 +47,6 @@ export class FileService {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
 
-      console.log('folder.id === userId', folder.id.toString() === userId);
-
       if (folder.id.toString() === userId) {
         return FOLDER_PERMISSIONS.OWNER;
       }
@@ -140,6 +138,37 @@ export class FileService {
       this.logger.error(e);
       throw new HttpException(
         'Error creating folder',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async deleteFolder(folderId: string): Promise<void> {
+    try {
+      const folderToDelete = await this.folderModel.findById(folderId);
+      if (!folderToDelete) {
+        throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Remove folder and its contents from the file system
+      const folderPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'uploads',
+        folderToDelete.id.toString(),
+      );
+      await fs.promises.rmdir(folderPath, { recursive: true });
+
+      // Delete folder and its associated data from the database
+      await this.folderModel.deleteOne({ _id: folderId });
+      await this.folderUserModel.deleteMany({ folder: folderId });
+      await this.fileModel.deleteMany({ parentFolderId: folderId });
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error deleting folder',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
