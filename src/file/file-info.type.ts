@@ -13,6 +13,7 @@ export enum FILE_TYPE {
   DOC = 'doc',
   DOCX = 'docx',
   'VND.OPENXMLFORMATS-OFFICEDOCUMENT.WORDPROCESSINGML.DOCUMENT' = 'docx',
+  'VND.OPENXMLFORMATS-OFFICEDOCUMENT.SPREADSHEETML.SHEET' = 'xlsx',
   XLS = 'xls',
   XLSX = 'xlsx',
   PPT = 'ppt',

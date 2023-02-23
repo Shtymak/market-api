@@ -97,7 +97,7 @@ export class FileController {
     return this.fileService.deleteFolder(folderId);
   }
 
-  @Delete('folder/files/:fileId')
+  @Delete('files/:folderId/:fileId')
   @UseGuards(PermissionsGuard)
   @Permissions(FOLDER_PERMISSIONS.OWNER)
   public async deleteFile(@Param('fileId') fileId: string) {

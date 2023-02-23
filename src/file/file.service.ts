@@ -37,12 +37,6 @@ export class FileService {
         ],
       });
 
-      console.log('folder', {
-        id: new Types.ObjectId(folderId),
-        folderId,
-        folder,
-      });
-
       if (!folder) {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
@@ -159,14 +153,17 @@ export class FileService {
         '..',
         '..',
         'uploads',
-        folderToDelete.id.toString(),
+        await this.getPathWithParentFolder(folderToDelete),
+        folderToDelete._id.toString(),
       );
       await fs.promises.rmdir(folderPath, { recursive: true });
 
       // Delete folder and its associated data from the database
-      await this.folderModel.deleteOne({ _id: folderId });
-      await this.folderUserModel.deleteMany({ folder: folderId });
-      await this.fileModel.deleteMany({ parentFolderId: folderId });
+      await this.folderModel.deleteOne({ _id: folderToDelete._id });
+      await this.folderUserModel.deleteMany({ folder: folderToDelete.id });
+      await this.fileModel.deleteMany({
+        $or: [{ folder: folderToDelete.id }, { folder: folderToDelete.id }],
+      });
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(
@@ -315,7 +312,9 @@ export class FileService {
 
       // Delete file and its associated data from the database
       await this.fileModel.deleteOne({ _id: fileId });
-      const folder = await this.folderModel.findById(fileToDelete.folder);
+      const folder = await this.folderModel.findOne({
+        $or: [{ _id: fileToDelete.folder }, { id: fileToDelete.folder }],
+      });
       if (folder) {
         folder.files = folder.files.filter((f) => f.toString() !== fileId);
         await folder.save();
