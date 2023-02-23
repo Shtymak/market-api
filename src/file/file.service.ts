@@ -300,6 +300,35 @@ export class FileService {
     }
   }
 
+  public async deleteFile(fileId: string): Promise<void> {
+    try {
+      const fileToDelete = await this.fileModel.findOne({
+        $or: [{ _id: fileId }, { id: fileId }],
+      });
+      if (!fileToDelete) {
+        throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+      }
+
+      // Remove file from the file system
+      const filePath = fileToDelete.path;
+      await fs.promises.unlink(filePath);
+
+      // Delete file and its associated data from the database
+      await this.fileModel.deleteOne({ _id: fileId });
+      const folder = await this.folderModel.findById(fileToDelete.folder);
+      if (folder) {
+        folder.files = folder.files.filter((f) => f.toString() !== fileId);
+        await folder.save();
+      }
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error deleting file',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   public async getFilePathById(id: string): Promise<string> {
     try {
       const file = await this.fileModel.findOne({ $or: [{ id }, { _id: id }] });
