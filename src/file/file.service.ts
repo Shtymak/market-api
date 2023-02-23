@@ -145,7 +145,9 @@ export class FileService {
 
   public async deleteFolder(folderId: string): Promise<void> {
     try {
-      const folderToDelete = await this.folderModel.findById(folderId);
+      const folderToDelete = await this.folderModel.findOne({
+        $or: [{ _id: folderId }, { id: folderId }],
+      });
       if (!folderToDelete) {
         throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
       }
