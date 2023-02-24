@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Put,
   Req,
   Res,
   UploadedFile,
@@ -167,6 +168,16 @@ export class FileController {
   @Permissions(FOLDER_PERMISSIONS.OWNER)
   public async deleteFile(@Param('fileId') fileId: string) {
     return this.fileService.deleteFile(fileId);
+  }
+
+  @Put('move/:folderId/:destinationFolderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(FOLDER_PERMISSIONS.OWNER)
+  public async moveFolder(
+    @Param('folderId') folderId: string,
+    @Param('destinationFolderId') destinationFolderId: string,
+  ) {
+    return this.fileService.moveFolder(folderId, destinationFolderId);
   }
 
   @Get('folder/entries/:folderId')

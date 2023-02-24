@@ -26,6 +26,7 @@ export class FileService {
     private readonly userSrvice: UsersService,
   ) {}
   private logger = new Logger(FileService.name);
+
   public async getPermissionForUser(
     userId: string,
     folderId: string,
@@ -136,6 +137,52 @@ export class FileService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async moveFolder(
+    folderId: string,
+    newParentFolderId: string,
+  ): Promise<Folder> {
+    const folder = await this.folderModel.findOne({ _id: folderId });
+    if (!folder) {
+      throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+    }
+
+    const newParentFolder = await this.folderModel.findOne({
+      _id: newParentFolderId,
+    });
+    if (!newParentFolder) {
+      throw new HttpException(
+        'New parent folder not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Check that the new parent folder is not a child of the folder being moved
+    let parent = newParentFolder;
+    while (parent) {
+      if (parent._id.toString() === folderId) {
+        throw new HttpException(
+          'Cannot move folder to its own child',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      parent = await this.folderModel.findOne({ _id: parent.parentFolderId });
+    }
+
+    folder.parentFolderId = newParentFolderId;
+    await folder.save();
+
+    // Move all child folders to the new parent folder
+    const childFolders = await this.folderModel.find({
+      parentFolderId: folderId,
+    });
+    for (const childFolder of childFolders) {
+      childFolder.parentFolderId = newParentFolderId;
+      await childFolder.save();
+    }
+
+    return folder;
   }
 
   public async deleteFolder(folderId: string): Promise<void> {
