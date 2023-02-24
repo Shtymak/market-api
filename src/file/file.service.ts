@@ -12,6 +12,7 @@ import { File, FileDocument } from './file.model';
 import { Folder, FolderDocument } from './folder.model';
 import { FolderUser, FolderUserDocument } from './folder.user.model';
 import FolderEntriesDto from './dto/folder-entries.dto';
+import { FolderEntity } from 'src/types/FolderEntity';
 
 @Injectable()
 export class FileService {
@@ -386,7 +387,7 @@ export class FileService {
     }
   }
 
-  private async getPathWithParentFolder(folder: Folder | any): Promise<string> {
+  private async getPathWithParentFolder(folder: FolderEntity): Promise<string> {
     const pathParts: string[] = [];
     let currentFolder = folder;
     while (currentFolder.parentFolderId) {

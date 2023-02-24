@@ -20,6 +20,7 @@ export enum FILE_TYPE {
   PPTX = 'pptx',
   TXT = 'txt',
   SVG = 'svg',
+  MP3 = 'mp3',
   UNKNOWN = 'unknown',
 }
 
