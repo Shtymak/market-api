@@ -1,3 +1,4 @@
+import { PossiblePath } from './../types/possible-path.interface';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
@@ -218,6 +219,16 @@ export class FileService {
         'Error deleting folder',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
+    }
+  }
+
+  async getPossibleMoves(folderId: string): Promise<PossiblePath[]> {
+    try {
+      return [{ label: 'root', value: 'root' }]; // TODO: Implement this
+    } catch (err) {
+      // Handle any errors that occur during the file system operations
+      console.error(err);
+      return [];
     }
   }
 

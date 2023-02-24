@@ -190,4 +190,15 @@ export class FileController {
   public async getFolderEntries(@Param('folderId') folderId: string) {
     return this.fileService.getFilesListByFolderId(folderId);
   }
+
+  @Get('possible/moves/:folderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  public async getPossibleMoves(@Param('folderId') folderId: string) {
+    return this.fileService.getPossibleMoves(folderId);
+  }
 }
