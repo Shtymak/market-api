@@ -221,15 +221,66 @@ export class FileService {
       );
     }
   }
+  private async getRootFolder(folderId: string): Promise<Folder> {
+    let currentFolder = await this.folderModel.findOne({
+      $or: [{ _id: folderId }, { id: folderId }],
+    });
+    if (!currentFolder) {
+      throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+    }
+
+    while (currentFolder.parentFolderId) {
+      currentFolder = await this.folderModel.findOne({
+        id: currentFolder.parentFolderId,
+      });
+    }
+
+    return currentFolder;
+  }
 
   async getPossibleMoves(folderId: string): Promise<PossiblePath[]> {
-    try {
-      return [{ label: 'root', value: 'root' }]; // TODO: Implement this
-    } catch (err) {
-      // Handle any errors that occur during the file system operations
-      console.error(err);
-      return [];
+    const possiblePaths: PossiblePath[] = [];
+    const currentFolder = (await this.getFolderById(folderId)) as FolderEntity;
+    const rootFolder = await this.getRootFolder(folderId);
+    const visited = new Set<string>();
+
+    const queue: { folder: FolderEntity; parentPath: string }[] = [
+      { folder: rootFolder as FolderEntity, parentPath: '' },
+    ];
+    while (queue.length > 0) {
+      const { folder, parentPath } = queue.shift();
+      if (
+        visited.has(folder.id.toString()) ||
+        visited.has(folder._id.toString())
+      ) {
+        continue;
+      }
+      visited.add(folder.id.toString());
+
+      if (
+        folder.id.toString() !== currentFolder.id.toString() &&
+        folder._id.toString() !== currentFolder._id.toString() &&
+        folder.id.toString() !== currentFolder.parentFolderId.toString() &&
+        folder._id.toString() !== currentFolder.parentFolderId.toString()
+      ) {
+        possiblePaths.push({
+          value: folder._id,
+          label: path.join(parentPath, folder.name),
+        });
+      }
+
+      const childFolders = await this.folderModel.find({
+        $or: [{ parentFolderId: folder.id }, { parentFolderId: folder._id }],
+      });
+      for (const childFolder of childFolders) {
+        queue.push({
+          folder: childFolder,
+          parentPath: path.join(parentPath, folder.name),
+        });
+      }
     }
+
+    return possiblePaths;
   }
 
   public async getFolderById(id: string): Promise<Folder> {
