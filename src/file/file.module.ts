@@ -9,10 +9,11 @@ import { Folder, FolderSchema } from './folder.model';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FileSchema, File } from './file.model';
 import { JwtModule } from '@nestjs/jwt';
+import { FodlerService } from './folder.service';
 
 @Module({
   controllers: [FileController],
-  providers: [FileService],
+  providers: [FileService, FodlerService],
   imports: [
     MongooseModule.forFeature([
       { name: Folder.name, schema: FolderSchema },

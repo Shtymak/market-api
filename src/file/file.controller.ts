@@ -29,11 +29,13 @@ import {
   ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
+import { FodlerService } from './folder.service';
 @Controller('file')
 export class FileController {
   constructor(
     private readonly fileService: FileService,
     private readonly configService: ConfigService,
+    private readonly folderService: FodlerService,
   ) {}
   @ApiBearerAuth() // This indicates that the endpoint requires a bearer token
   @ApiOperation({ summary: 'Create a new folder' }) // This provides a brief description of what the endpoint does
@@ -42,7 +44,7 @@ export class FileController {
   @UseGuards(JwtAuthGuard)
   public async createFolder(@Req() req: any, @Body() body: CreateFolderDto) {
     console.log('req.user', req.user);
-    return this.fileService.createFolder(body, req.user.id);
+    return this.folderService.createFolder(body, req.user.id);
   }
 
   @Post('folder/upload/:folderId')
@@ -93,7 +95,7 @@ export class FileController {
     description: 'Folder not found',
   })
   public async getFolder(@Param('folderId') folderId: string) {
-    return this.fileService.getFolderById(folderId);
+    return this.folderService.getFolderById(folderId);
   }
 
   @Get('folder/:folderId/files')
@@ -160,7 +162,7 @@ export class FileController {
   })
   @ApiOperation({ summary: 'Delete a folder' })
   public async deleteFolder(@Param('folderId') folderId: string) {
-    return this.fileService.deleteFolder(folderId);
+    return this.folderService.deleteFolder(folderId);
   }
 
   @Delete('files/:folderId/:fileId')
@@ -177,7 +179,7 @@ export class FileController {
     @Param('folderId') folderId: string,
     @Param('destinationFolderId') destinationFolderId: string,
   ) {
-    return this.fileService.moveFolder(folderId, destinationFolderId);
+    return this.folderService.moveFolder(folderId, destinationFolderId);
   }
 
   @Get('folder/entries/:folderId')
@@ -199,6 +201,6 @@ export class FileController {
     FOLDER_PERMISSIONS.USER,
   )
   public async getPossibleMoves(@Param('folderId') folderId: string) {
-    return this.fileService.getPossibleMoves(folderId);
+    return this.folderService.getPossibleMoves(folderId);
   }
 }
