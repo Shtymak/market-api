@@ -284,4 +284,33 @@ export class FodlerService {
       );
     }
   }
+
+  public async renameFolder(folderId: string, name: string): Promise<Folder> {
+    try {
+      const folder = await this.folderModel.findOne({
+        $or: [{ _id: folderId }, { id: folderId }],
+      });
+      if (!folder) {
+        throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+      }
+      if (!name || name.trim().length === 0) {
+        throw new HttpException(
+          'Folder name cannot be empty',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+      if (name === folder.name) {
+        return folder;
+      }
+      folder.name = name;
+      await folder.save();
+      return folder;
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error renaming folder',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }

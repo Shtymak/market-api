@@ -30,6 +30,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { FodlerService } from './folder.service';
+import { RenameFolderDto } from './dto/rename-folder.dto';
 @Controller('file')
 export class FileController {
   constructor(
@@ -202,5 +203,66 @@ export class FileController {
   )
   public async getPossibleMoves(@Param('folderId') folderId: string) {
     return this.folderService.getPossibleMoves(folderId);
+  }
+
+  @Get('folder/by/id/:folderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  @ApiOperation({
+    summary: 'Get folder by ID',
+    description: 'Retrieves a folder by its unique identifier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Folder data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Folder not found',
+  })
+  public async getFolderById(@Param('folderId') folderId: string) {
+    return this.folderService.getFolderById(folderId);
+  }
+
+  @Put('folder/rename/:folderId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(FOLDER_PERMISSIONS.OWNER)
+  @ApiOperation({
+    summary: 'Rename folder',
+    description: 'Rename folder',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Folder data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Folder not found',
+  })
+  public async renameFolder(
+    @Param('folderId') folderId: string,
+    @Body() renameFolderDto: RenameFolderDto,
+  ) {
+    return this.folderService.renameFolder(folderId, renameFolderDto.name);
   }
 }
