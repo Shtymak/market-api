@@ -196,6 +196,51 @@ export class FileService {
       );
     }
   }
+  public async downloadFile(fileId: string): Promise<Buffer> {
+    try {
+      // знайти файл
+
+      this.logger.debug(`fileId: ${fileId}`);
+      const file = await this.fileModel.findOne({
+        $or: [{ _id: fileId }, { id: fileId }],
+      });
+      if (!file) {
+        throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+      }
+
+      // отримати шлях до файлу
+      const folder = await this.folderModel.findOne({
+        $or: [{ _id: file.folder }, { id: file.folder }],
+      });
+      if (!folder) {
+        throw new HttpException('Folder not found', HttpStatus.NOT_FOUND);
+      }
+      const filePath = file.path;
+      const maskKey = 'uploads';
+      const maskIndex = filePath.indexOf(maskKey);
+      const staticPath = filePath.slice(maskIndex + maskKey.length + 1);
+
+      // повернути файл
+      const finalPath = path.join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'uploads',
+        staticPath,
+      );
+      this.logger.debug(`finalPath: ${finalPath}`);
+
+      const fileBuffer = fs.readFileSync(finalPath);
+      return fileBuffer;
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error downloading file',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   public async getFilePathById(id: string): Promise<string> {
     try {

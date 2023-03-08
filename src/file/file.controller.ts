@@ -31,6 +31,7 @@ import {
 } from '@nestjs/swagger';
 import { FodlerService } from './folder.service';
 import { RenameFolderDto } from './dto/rename-folder.dto';
+import { DownloadFileDto } from './dto/download-file.dto';
 @Controller('file')
 export class FileController {
   constructor(
@@ -264,5 +265,39 @@ export class FileController {
     @Body() renameFolderDto: RenameFolderDto,
   ) {
     return this.folderService.renameFolder(folderId, renameFolderDto.name);
+  }
+
+  @Get('folder/download/:folderId/:fileId')
+  @UseGuards(PermissionsGuard)
+  @Permissions(
+    FOLDER_PERMISSIONS.OWNER,
+    FOLDER_PERMISSIONS.ADMIN,
+    FOLDER_PERMISSIONS.USER,
+  )
+  @ApiOperation({
+    summary: 'Download file from folder',
+    description: 'Download file from folder',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Folder`s files data',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Folder not found',
+  })
+  public async downloadFolder(
+    @Param('folderId') folderId: string,
+    @Param('fileId') fileId: string,
+  ) {
+    return this.fileService.downloadFile(fileId);
   }
 }
