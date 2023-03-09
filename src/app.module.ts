@@ -17,6 +17,7 @@ import { FileModule } from './file/file.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join, resolve } from 'path';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { join, resolve } from 'path';
         },
       ],
     }),
+    PlansModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],

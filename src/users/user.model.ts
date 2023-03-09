@@ -1,5 +1,7 @@
+import { StoragePlanView } from './../plans/rate-plan.model';
+import { StoragePlan } from 'src/plans/rate-plan.model';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, SchemaTypes } from 'mongoose';
+import { Document, SchemaTypes, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { Roles } from '../types/Roles.enum';
 export type UserDocument = User & Document;
@@ -56,6 +58,10 @@ export class User {
   @ApiProperty({ example: '2021-09-22', description: 'Date of update' })
   @Prop({ default: new Date() })
   updatedAt: Date;
+
+  @ApiProperty({ example: 'base', description: 'Storage plan name' })
+  @Prop({ type: String, default: StoragePlanView.BASE })
+  storagePlan: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

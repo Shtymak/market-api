@@ -54,6 +54,9 @@ export class FullUserDto extends BaseEntity {
   @ApiProperty({ example: 'xxxxxxxxxxxxxxxx', description: 'Google Id' })
   googleId: string;
 
+  @ApiProperty({ example: 'base', description: 'Storage plan name' })
+  storagePlan: string;
+
   constructor(model: User) {
     super(model);
     this.id = model.id;
@@ -68,5 +71,6 @@ export class FullUserDto extends BaseEntity {
     this.banned = model.banned;
     this.phone = model.phone;
     this.googleId = model.googleId;
+    this.storagePlan = model.storagePlan;
   }
 }

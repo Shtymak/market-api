@@ -12,12 +12,15 @@ export enum FILE_TYPE {
   PDF = 'pdf',
   DOC = 'doc',
   DOCX = 'docx',
+  'VND.OPENXMLFORMATS-OFFICEDOCUMENT.WORDPROCESSINGML.DOCUMENT' = 'docx',
+  'VND.OPENXMLFORMATS-OFFICEDOCUMENT.SPREADSHEETML.SHEET' = 'xlsx',
   XLS = 'xls',
   XLSX = 'xlsx',
   PPT = 'ppt',
   PPTX = 'pptx',
   TXT = 'txt',
   SVG = 'svg',
+  MP3 = 'mp3',
   UNKNOWN = 'unknown',
 }
 

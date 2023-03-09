@@ -44,4 +44,5 @@ export const config = () => ({
   multer: {
     dest: process.env.MULTER_DEST || 'uploads',
   },
+  origin: process.env.ORIGIN || 'http://localhost:3000',
 });
