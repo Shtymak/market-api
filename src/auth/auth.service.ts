@@ -302,6 +302,7 @@ export class AuthService {
       roles: user.roles,
       banned: user.banned,
       avatar: user.avatar,
+      storagePlan: user.storagePlan,
     };
     const accessToken = this.jwtService.sign(payload);
     return accessToken;

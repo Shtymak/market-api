@@ -14,4 +14,6 @@ export class PayloadDto {
   avatar: string;
   @ApiProperty({ example: 'true', description: 'Is user banned?' })
   banned: boolean;
+  @ApiProperty({ example: 'base', description: 'Storage plan name' })
+  storagePlan: string;
 }

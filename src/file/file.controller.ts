@@ -1,3 +1,4 @@
+import { FolderStorageLimitGuard } from './../plans/rate-plan.guard';
 import {
   Body,
   Controller,
@@ -299,5 +300,33 @@ export class FileController {
     @Param('fileId') fileId: string,
   ) {
     return this.fileService.downloadFile(fileId);
+  }
+
+  @Get('folder/size/:folderId')
+  @UseGuards(PermissionsGuard)
+  @UseGuards(FolderStorageLimitGuard)
+  @Permissions(FOLDER_PERMISSIONS.OWNER)
+  @ApiOperation({
+    summary: 'Get folder size',
+    description: 'Get folder size',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Folder size',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Folder not found',
+  })
+  public async getFolderSize(@Param('folderId') folderId: string) {
+    return this.folderService.getFolderSize(folderId);
   }
 }

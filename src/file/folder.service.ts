@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Folder, FolderDocument } from './folder.model';
 import { Model } from 'mongoose';
@@ -312,5 +318,46 @@ export class FodlerService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  async getFolderSize(folderId: string): Promise<number> {
+    // Find the folder by ID and user ID
+    const folder = await this.folderModel.findOne({
+      $or: [{ _id: folderId }, { id: folderId }],
+    });
+
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+
+    // Recursively get the total size of all files in the folder
+    const totalSize = await this.getFolderSizeRecursive(folder);
+
+    return totalSize;
+  }
+
+  private async getFolderSizeRecursive(folder: FolderEntity): Promise<number> {
+    let totalSize = 0;
+
+    // Iterate over all files in the folder and add their sizes
+    for (const fileId of folder.files) {
+      const file = await this.fileModel.findOne({
+        $or: [{ _id: fileId }, { id: fileId }],
+      });
+      totalSize += file.info.size;
+    }
+
+    const subfolders = await this.folderModel.find({
+      $or: [{ parentFolderId: folder.id }, { parentFolderId: folder._id }],
+    });
+    // Iterate over all subfolders and recursively add their sizes
+    for (const subfolderId of subfolders) {
+      const subfolder = await this.folderModel.findOne({
+        $or: [{ _id: subfolderId }, { id: subfolderId }],
+      });
+      totalSize += await this.getFolderSizeRecursive(subfolder);
+    }
+
+    return totalSize;
   }
 }
