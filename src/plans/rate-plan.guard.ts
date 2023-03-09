@@ -1,51 +1,44 @@
-import { FodlerService } from './../file/folder.service';
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
+  Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { Observable } from 'rxjs';
-import { StoragePlans } from './rate-plan.model';
+import { FodlerService } from '../file/folder.service';
+import { StoragePlan, StoragePlans } from './rate-plan.model';
 
 @Injectable()
 export class FolderStorageLimitGuard implements CanActivate {
   constructor(
     private readonly folderService: FodlerService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
-    if (!authHeader) {
-      throw new UnauthorizedException({
-        message: 'User is not authorized',
-      });
-    }
-    const bearer = authHeader.split(' ')[0];
-    const token = authHeader.split(' ')[1];
-    if (bearer !== 'Bearer' || !token) {
-      throw new UnauthorizedException({
-        message: 'User is not authorized',
-      });
-    }
-    const user = this.jwtService.verify(token);
-    const { storagePlan } = user;
-    const currentPlan = StoragePlans.find((plan) => plan.name === storagePlan);
-    const storageLimitGB = currentPlan.storageLimit;
-    return this.folderService.getFolderSize(user.id).then((sizeMB) => {
-      const sizeGB = sizeMB / 1024 / 1024;
 
-      if (sizeGB <= storageLimitGB) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    if (!authHeader) {
+      throw new UnauthorizedException({ message: 'User is not authorized' });
+    }
+
+    const [bearer, token] = authHeader.split(' ');
+
+    if (bearer !== 'Bearer' || !token) {
+      throw new UnauthorizedException({ message: 'User is not authorized' });
+    }
+
+    const user = this.jwtService.verify(token);
+    const currentPlan: StoragePlan = StoragePlans.find(
+      (plan) => plan.name === user.storagePlan,
+    );
+
+    const storageLimitGB = currentPlan.storageLimit;
+    const folderSizeMB = await this.folderService.getFolderSize(user.id);
+    const sizeDevideNumber = 1024;
+    const folderSizeGB = folderSizeMB / sizeDevideNumber / sizeDevideNumber;
+
+    return folderSizeGB <= storageLimitGB;
   }
 }
