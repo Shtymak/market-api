@@ -1,3 +1,4 @@
+import { CacheService } from './../redis/cache.facade';
 import { UsersModule } from './../users/users.module';
 import { ConfigService } from '@nestjs/config';
 import { RedisModule } from './../redis/redis.module';
@@ -13,7 +14,7 @@ import { FodlerService } from './folder.service';
 
 @Module({
   controllers: [FileController],
-  providers: [FileService, FodlerService],
+  providers: [FileService, FodlerService, CacheService],
   imports: [
     MongooseModule.forFeature([
       { name: Folder.name, schema: FolderSchema },

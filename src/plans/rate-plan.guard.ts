@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -14,7 +15,7 @@ export class FolderStorageLimitGuard implements CanActivate {
     private readonly folderService: FodlerService,
     private readonly jwtService: JwtService,
   ) {}
-
+  private logger = new Logger('FolderStorageLimitGuard');
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
@@ -35,9 +36,17 @@ export class FolderStorageLimitGuard implements CanActivate {
     );
 
     const storageLimitGB = currentPlan.storageLimit;
-    const folderSizeMB = await this.folderService.getFolderSize(user.id);
+    const folderSizeBytes = await this.folderService.getFolderSize(user.id);
     const sizeDevideNumber = 1024;
-    const folderSizeGB = folderSizeMB / sizeDevideNumber / sizeDevideNumber;
+    const folderSizeGB =
+      folderSizeBytes / sizeDevideNumber / sizeDevideNumber / sizeDevideNumber;
+    const folderSizeMB = folderSizeBytes / sizeDevideNumber / sizeDevideNumber;
+
+    this.logger.debug(
+      `User ${user.id} has ${folderSizeGB.toFixed(
+        2,
+      )} GB or ${folderSizeMB.toFixed(2)} MB & limit is ${storageLimitGB} GB`,
+    );
 
     return folderSizeGB <= storageLimitGB;
   }

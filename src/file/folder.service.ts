@@ -1,3 +1,4 @@
+import { RedisService } from './../redis/redis.service';
 import {
   HttpException,
   HttpStatus,
@@ -16,6 +17,7 @@ import * as fs from 'fs';
 import { FolderEntity } from 'src/types/FolderEntity';
 import { PossiblePath } from 'src/types/possible-path.interface';
 import { File } from './file.model';
+import { CacheService } from 'src/redis/cache.facade';
 @Injectable()
 export class FodlerService {
   constructor(
@@ -25,6 +27,7 @@ export class FodlerService {
     private readonly folderModel: Model<FolderDocument>,
     @InjectModel(File.name)
     private readonly fileModel: Model<FileDocument>,
+    private readonly redisService: CacheService,
   ) {}
   private logger = new Logger(FodlerService.name);
 
@@ -321,6 +324,15 @@ export class FodlerService {
   }
 
   async getFolderSize(folderId: string): Promise<number> {
+    // Check if folder size is already cached in Redis
+    const cachedSize = await this.redisService.get<number>(
+      `folder:${folderId}`,
+    );
+
+    if (cachedSize) {
+      return cachedSize;
+    }
+
     // Find the folder by ID and user ID
     const folder = await this.folderModel.findOne({
       $or: [{ _id: folderId }, { id: folderId }],
@@ -333,10 +345,15 @@ export class FodlerService {
     // Recursively get the total size of all files in the folder
     const totalSize = await this.getFolderSizeRecursive(folder);
 
+    // Cache the folder size in Redis for 5 minutes
+    await this.redisService.set<number>(`folder:${folderId}`, totalSize, 100);
+
     return totalSize;
   }
 
-  private async getFolderSizeRecursive(folder: FolderEntity): Promise<number> {
+  private async getFolderSizeRecursive(
+    folder: FolderDocument,
+  ): Promise<number> {
     let totalSize = 0;
 
     // Iterate over all files in the folder and add their sizes
@@ -350,11 +367,9 @@ export class FodlerService {
     const subfolders = await this.folderModel.find({
       $or: [{ parentFolderId: folder.id }, { parentFolderId: folder._id }],
     });
+
     // Iterate over all subfolders and recursively add their sizes
-    for (const subfolderId of subfolders) {
-      const subfolder = await this.folderModel.findOne({
-        $or: [{ _id: subfolderId }, { id: subfolderId }],
-      });
+    for (const subfolder of subfolders) {
       totalSize += await this.getFolderSizeRecursive(subfolder);
     }
 

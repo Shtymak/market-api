@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as fs from 'fs';
 import mongoose, { Model, Types } from 'mongoose';
 import * as path from 'path';
+import { CacheService } from 'src/redis/cache.facade';
 import { FOLDER_PERMISSIONS } from './../roles/permission.enum';
 import FolderEntriesDto from './dto/folder-entries.dto';
 import UploadFileDto from './dto/upload-file.dto';
@@ -22,6 +23,7 @@ export class FileService {
     @InjectModel(File.name)
     private readonly fileModel: Model<FileDocument>,
     private readonly folderService: FodlerService,
+    private readonly redisService: CacheService,
   ) {}
   private logger = new Logger(FileService.name);
 
@@ -156,6 +158,7 @@ export class FileService {
       });
 
       // повертаємо створений файл
+      await this.redisService.delete(`folder:${folderId}`);
       return newFile;
     } catch (e) {
       this.logger.error(e);
@@ -188,6 +191,7 @@ export class FileService {
         folder.files = folder.files.filter((f) => f.toString() !== fileId);
         await folder.save();
       }
+      await this.redisService.delete(`folder:${folder._id}`);
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(
