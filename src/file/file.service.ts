@@ -12,6 +12,7 @@ import { File, FileDocument } from './file.model';
 import { Folder, FolderDocument } from './folder.model';
 import { FodlerService } from './folder.service';
 import { FolderUser, FolderUserDocument } from './folder.user.model';
+import * as util from 'util';
 
 @Injectable()
 export class FileService {
@@ -156,10 +157,23 @@ export class FileService {
           }
         });
       });
+      // Створіть новий об'єкт з потрібними властивостями без циклічних посилань
+      const sanitizedFile = {
+        id: newFile.id,
+        createdAt: newFile.createdAt,
+        updatedAt: newFile.updatedAt,
+        name: newFile.name,
+        path: newFile.path,
+        createdBy: newFile.createdBy,
+        info: newFile.info,
+        folder: null,
+      };
 
       // повертаємо створений файл
       await this.redisService.delete(`folder:${folderId}`);
-      return newFile;
+      console.log(util.inspect(sanitizedFile, false, null, true));
+
+      return sanitizedFile;
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(
@@ -167,6 +181,10 @@ export class FileService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+  public removeCircularReference(file) {
+    const { folder, ...fileWithoutFolder } = file;
+    return fileWithoutFolder;
   }
 
   public async deleteFile(fileId: string): Promise<void> {

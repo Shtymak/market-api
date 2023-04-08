@@ -1,3 +1,4 @@
+import { FileModule } from './../file/file.module';
 import { RedisModule } from './../redis/redis.module';
 import { LoginLink, LoginLinkSchema } from './login-link.model';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -25,6 +26,7 @@ import { MailModule } from '../mail/mail.module';
     ]),
     MailModule,
     RedisModule,
+    FileModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

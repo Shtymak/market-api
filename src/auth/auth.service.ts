@@ -1,3 +1,5 @@
+import { FOLDER_PERMISSIONS } from 'src/roles/permission.enum';
+import { FodlerService } from './../file/folder.service';
 import {
   HttpException,
   HttpStatus,
@@ -21,6 +23,7 @@ import { MagicLinkDto } from './dto/magic-link.dto';
 import { LoginWithPasswordDto } from './dto/password-login.dto';
 import { PayloadDto } from './dto/payload.dto';
 import { LoginLink, LoginLinkDocument } from './login-link.model';
+import CreateFolderDto from 'src/file/dto/create-folder.dto';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +35,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly mailService: MailService,
     private readonly redisService: RedisService,
+    private readonly folderService: FodlerService,
   ) {}
   private logger = new Logger(AuthService.name);
 
@@ -58,6 +62,11 @@ export class AuthService {
   public async registration(user: CreateUserDto): Promise<GetAuthDto> {
     try {
       const newUser = await this.usersService.create(user);
+      const initialFolder: CreateFolderDto = {
+        name: 'My Drive',
+        role: FOLDER_PERMISSIONS.OWNER,
+      };
+      await this.folderService.createFolder(initialFolder, newUser.id);
       const accessToken = this.generateToken(newUser);
       return {
         token: accessToken,
@@ -105,7 +114,7 @@ export class AuthService {
         user: new GetUserDto(user),
       };
     } catch (e) {
-      console.log(e);
+      this.logger.error(e);
 
       throw new HttpException(
         e.message,

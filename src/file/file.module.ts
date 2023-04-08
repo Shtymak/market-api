@@ -39,5 +39,6 @@ import { FodlerService } from './folder.service';
     RedisModule,
     UsersModule,
   ],
+  exports: [FileService, FodlerService],
 })
 export class FileModule {}
