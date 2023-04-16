@@ -1,5 +1,7 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Req, UseGuards } from '@nestjs/common';
 import { PlansService } from './plans.service';
+import { JwtAuthGuard } from 'src/auth/auth.guard';
+import { User } from 'src/users/user.model';
 
 @Controller('plans')
 export class PlansController {
@@ -7,10 +9,12 @@ export class PlansController {
   private logger = new Logger('PlansController');
 
   @Get('/')
-  getPlans() {
+  @UseGuards(JwtAuthGuard)
+  getPlans(@Req() req) {
+    const user: User = req.user;
     return {
-      plans: this.plansService.getPlans(),
-      count: this.plansService.getPlans().length,
+      plans: this.plansService.getPlans(user.storagePlan as any),
+      count: this.plansService.getPlans(user.storagePlan as any).length,
     };
   }
 }
