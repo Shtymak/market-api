@@ -23,7 +23,8 @@ async function bootstrap() {
 
   //origin
   app.enableCors({
-    origin: configService.get<string>('origin'),
+    origin: [configService.get<string>('origin'), '*'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   });
 
   await app.listen(PORT);

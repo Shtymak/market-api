@@ -18,6 +18,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join, resolve } from 'path';
 import { PlansModule } from './plans/plans.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { PlansModule } from './plans/plans.module';
       ],
     }),
     PlansModule,
+    StripeModule,
   ],
   controllers: [AppController, UsersController],
   providers: [],

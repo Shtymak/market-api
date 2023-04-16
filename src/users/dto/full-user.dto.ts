@@ -57,6 +57,9 @@ export class FullUserDto extends BaseEntity {
   @ApiProperty({ example: 'base', description: 'Storage plan name' })
   storagePlan: string;
 
+  @ApiProperty({ example: 'uniq', description: 'Stripe customer id' })
+  stripeCustomerId?: string;
+
   constructor(model: User) {
     super(model);
     this.id = model.id;
@@ -72,5 +75,6 @@ export class FullUserDto extends BaseEntity {
     this.phone = model.phone;
     this.googleId = model.googleId;
     this.storagePlan = model.storagePlan;
+    this.stripeCustomerId = model.stripeCustomerId;
   }
 }

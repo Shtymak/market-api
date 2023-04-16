@@ -86,6 +86,9 @@ export class FileService {
 
     // валідація вхідних параметрів
     if (!folderId || !file || file.size > MAX_FILE_SIZE) {
+      if (file.size > MAX_FILE_SIZE) {
+        throw new HttpException('File size is too big', HttpStatus.BAD_REQUEST);
+      }
       throw new HttpException('Invalid file or folder', HttpStatus.BAD_REQUEST);
     }
 

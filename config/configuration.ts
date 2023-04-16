@@ -45,4 +45,9 @@ export const config = () => ({
     dest: process.env.MULTER_DEST || 'uploads',
   },
   origin: process.env.ORIGIN || 'http://localhost:3000',
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    publicKey: process.env.STRIPE_PUBLIC_KEY,
+    currency: process.env.STRIPE_CURRENCY || 'uah',
+  },
 });

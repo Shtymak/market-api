@@ -62,6 +62,10 @@ export class User {
   @ApiProperty({ example: 'base', description: 'Storage plan name' })
   @Prop({ type: String, default: StoragePlanView.BASE })
   storagePlan: string;
+
+  @ApiProperty({ example: 'uniq', description: 'Stripe customer id' })
+  @Prop({ required: false, default: '' })
+  stripeCustomerId: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

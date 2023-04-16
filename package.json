@@ -57,6 +57,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
     "sharp": "^0.31.2",
+    "stripe": "^12.1.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
