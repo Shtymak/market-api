@@ -329,4 +329,33 @@ export class FileController {
   public async getFolderSize(@Param('folderId') folderId: string) {
     return this.folderService.getFolderSize(folderId);
   }
+  @Get('folders/shared')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Get shared folders',
+    description: 'Retrieves the list of shared folders',
+  })
+  @ApiOkResponse({
+    description: 'Shared folders data',
+  })
+  public async getSharedFolders(@Req() req: any) {
+    return this.folderService.getSharedFolders(req.user.id);
+  }
+
+  @Put('folder/share/:folderId')
+  @UseGuards(JwtAuthGuard)
+  @Permissions(FOLDER_PERMISSIONS.OWNER)
+  @ApiOperation({
+    summary: 'Share folder with user',
+    description: 'Share folder with user',
+  })
+  @ApiOkResponse({
+    description: 'Shared folder data',
+  })
+  public async shareFolder(
+    @Param('folderId') folderId: string,
+    @Body() body: { userId: string; role: keyof typeof FOLDER_PERMISSIONS },
+  ) {
+    return this.folderService.shareFolder(folderId, body.userId, body.role);
+  }
 }

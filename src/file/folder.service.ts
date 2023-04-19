@@ -323,7 +323,43 @@ export class FodlerService {
     }
   }
 
-  async getFolderSize(folderId: string): Promise<number> {
+  public async shareFolder(
+    folderId: string,
+    userId: string,
+    role: string,
+  ): Promise<FolderUser> {
+    try {
+      // Find the folder by ID
+      const folder = await this.getFolderById(folderId);
+
+      // Check if the user already has access to the folder
+      const existingAccess = await this.folderUserModel.findOne({
+        user: userId,
+        folder: folderId,
+      });
+      if (existingAccess) {
+        existingAccess.role = role;
+        return existingAccess.save();
+      }
+
+      // Create a new FolderUser document to grant access to the user
+      const folderUser = await this.folderUserModel.create({
+        user: userId,
+        folder: folderId,
+        role: role,
+      });
+
+      return folderUser;
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error sharing folder',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  public async getFolderSize(folderId: string): Promise<number> {
     // Check if folder size is already cached in Redis
     const cachedSize = await this.redisService.get<number>(
       `folder:${folderId}`,
@@ -349,6 +385,21 @@ export class FodlerService {
     await this.redisService.set<number>(`folder:${folderId}`, totalSize, 100);
 
     return totalSize;
+  }
+
+  public async getSharedFolders(userId: string): Promise<Folder[]> {
+    try {
+      const sharedFolders = await this.folderUserModel.find({ user: userId });
+      const folderIds = sharedFolders.map((folderUser) => folderUser.folder);
+      const folders = await this.folderModel.find({ _id: { $in: folderIds } });
+      return folders;
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(
+        'Error getting shared folders',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   private async getFolderSizeRecursive(

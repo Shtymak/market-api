@@ -81,6 +81,17 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
+  @Get('/sanitized')
+  @ApiOperation({ summary: 'Get all users sanitized' })
+  @ApiResponse({ type: [GetUserDto], status: HttpStatus.OK })
+  public async findAllSanitized(@Query() query: PaginationDto) {
+    const users = await this.usersService.findAll(query);
+    return users.map((user) => {
+      const { password, ...result } = user;
+      return result;
+    });
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiResponse({ type: GetUserDto, status: HttpStatus.OK })
